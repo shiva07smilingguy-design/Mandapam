@@ -37,6 +37,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  Info,
 } from "lucide-react";
 import {
   useAppStore,
@@ -44,6 +45,13 @@ import {
   formatDate,
   isVenueAvailable,
 } from "@/lib/store";
+import {
+  computeCommission,
+  getBaseRatePercent,
+  COMMISSION_BASE_RATES,
+  COMMISSION_SLABS,
+  COMMISSION_FLOOR_PERCENT,
+} from "@/lib/commission";
 import type { BookingStatus, VenuePackage } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -778,27 +786,44 @@ export function OwnerEarnings() {
     (v) => v.ownerId === (currentUser?.id ?? "u-owner-1")
   );
   const myVenueIds = new Set(myVenues.map((v) => v.id));
-  const myBookings = bookings.filter((b) => myVenueIds.has(b.venueId));
+  const myBookings = bookings.filter(
+    (b) => myVenueIds.has(b.venueId) && b.status !== "cancelled"
+  );
 
-  const platformCommissionRate = 0.1; // 10%
-  const grossRevenue = myBookings
-    .filter((b) => b.status !== "cancelled")
-    .reduce((s, b) => s + b.bookingAmount, 0);
-  const commission = Math.round(grossRevenue * platformCommissionRate);
-  const netEarnings = grossRevenue - commission;
+  // Per-booking commission breakdown (tiered by venue type + slab discount)
+  const bookingBreakdown = myBookings.map((b) => {
+    const venue = venues.find((v) => v.id === b.venueId)!;
+    const breakdown = computeCommission(venue.type, b.bookingAmount);
+    return { booking: b, venue, breakdown };
+  });
 
+  const grossRevenue = bookingBreakdown.reduce(
+    (s, r) => s + r.booking.bookingAmount,
+    0
+  );
+  const totalCommission = bookingBreakdown.reduce(
+    (s, r) => s + r.breakdown.commissionAmount,
+    0
+  );
+  const netEarnings = grossRevenue - totalCommission;
+  const effectiveRate =
+    grossRevenue > 0 ? (totalCommission / grossRevenue) * 100 : 0;
+
+  // Per-venue aggregate
   const perVenue = myVenues.map((v) => {
-    const venueBookings = myBookings.filter((b) => b.venueId === v.id);
-    const gross = venueBookings
-      .filter((b) => b.status !== "cancelled")
-      .reduce((s, b) => s + b.bookingAmount, 0);
-    const comm = Math.round(gross * platformCommissionRate);
+    const venueRows = bookingBreakdown.filter((r) => r.venue.id === v.id);
+    const gross = venueRows.reduce((s, r) => s + r.booking.bookingAmount, 0);
+    const commission = venueRows.reduce(
+      (s, r) => s + r.breakdown.commissionAmount,
+      0
+    );
     return {
       venue: v,
       gross,
-      commission: comm,
-      net: gross - comm,
-      bookings: venueBookings.length,
+      commission,
+      net: gross - commission,
+      bookings: venueRows.length,
+      baseRate: getBaseRatePercent(v.type),
     };
   });
 
@@ -813,30 +838,37 @@ export function OwnerEarnings() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      <div>
-        <h1 className="font-serif text-3xl font-bold">Earnings & Settlements</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Track your revenue, platform commission and net payouts
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-3xl font-bold">Earnings & Settlements</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Tiered commission · {myBookings.length} active bookings · settled on
+            5th of every month
+          </p>
+        </div>
+        <Badge variant="outline" className="text-xs">
+          Effective rate: <strong className="ml-1">{effectiveRate.toFixed(2)}%</strong>
+        </Badge>
       </div>
 
+      {/* Top KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-5 gap-0">
           <div className="text-xs text-muted-foreground uppercase">Gross revenue</div>
           <div className="text-2xl font-bold mt-1">{formatINR(grossRevenue)}</div>
           <div className="text-xs text-muted-foreground mt-1">
-            From {myBookings.filter((b) => b.status !== "cancelled").length} active bookings
+            From {myBookings.length} active bookings
           </div>
         </Card>
         <Card className="p-5 gap-0">
           <div className="text-xs text-muted-foreground uppercase">
-            Platform commission (10%)
+            Platform commission
           </div>
           <div className="text-2xl font-bold mt-1 text-amber-700">
-            − {formatINR(commission)}
+            − {formatINR(totalCommission)}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
-            Deducted at source
+            Tiered by venue type & booking value
           </div>
         </Card>
         <Card className="p-5 gap-0 wedding-gradient-soft border-primary/20">
@@ -850,6 +882,76 @@ export function OwnerEarnings() {
         </Card>
       </div>
 
+      {/* Commission policy explainer */}
+      <Card className="border-primary/15">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="grid size-8 place-items-center rounded-full bg-accent text-accent-foreground">
+              <Info className="size-4" />
+            </div>
+            <div>
+              <h3 className="font-semibold">How Mandapam commission works</h3>
+              <p className="text-xs text-muted-foreground">
+                Base rate depends on venue type · high-value bookings get a
+                discount · floor of 5% applies
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
+                Tier 1 · Base rate by venue type
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {Object.entries(COMMISSION_BASE_RATES).map(([type, rate]) => (
+                  <div
+                    key={type}
+                    className="flex items-center justify-between bg-secondary/40 rounded px-2 py-1 border"
+                  >
+                    <span className="truncate">{type}</span>
+                    <Badge variant="outline" className="font-mono">
+                      {(rate * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
+                Tier 2 · High-value slab discount
+              </div>
+              <div className="space-y-1.5 text-xs">
+                {COMMISSION_SLABS.map((slab) => (
+                  <div
+                    key={slab.label}
+                    className="flex items-center justify-between bg-secondary/40 rounded px-2 py-1.5 border"
+                  >
+                    <span>{slab.label}</span>
+                    <Badge
+                      variant="outline"
+                      className={
+                        slab.discountPercent > 0
+                          ? "text-emerald-700 border-emerald-200"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {slab.discountPercent > 0
+                        ? `−${slab.discountPercent}pp`
+                        : "base"}
+                    </Badge>
+                  </div>
+                ))}
+                <div className="text-[10px] text-muted-foreground pt-1">
+                  Floor: final rate never goes below{" "}
+                  <strong>{COMMISSION_FLOOR_PERCENT}%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Per-venue summary */}
       <Card>
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Per-venue breakdown</h3>
@@ -858,10 +960,12 @@ export function OwnerEarnings() {
               <thead>
                 <tr className="text-left text-xs text-muted-foreground border-b">
                   <th className="py-2 pr-3">Venue</th>
+                  <th className="py-2 pr-3 text-center">Type</th>
                   <th className="py-2 pr-3 text-center">Bookings</th>
                   <th className="py-2 pr-3 text-right">Gross</th>
+                  <th className="py-2 pr-3 text-center">Base rate</th>
                   <th className="py-2 pr-3 text-right">Commission</th>
-                  <th className="py-2 pr-3 text-right">Net</th>
+                  <th className="py-2 pr-3 text-right">Net payable</th>
                 </tr>
               </thead>
               <tbody>
@@ -882,9 +986,17 @@ export function OwnerEarnings() {
                         </div>
                       </div>
                     </td>
+                    <td className="py-2.5 pr-3 text-center text-xs">
+                      {row.venue.type}
+                    </td>
                     <td className="py-2.5 pr-3 text-center">{row.bookings}</td>
                     <td className="py-2.5 pr-3 text-right">
                       {formatINR(row.gross)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-center">
+                      <Badge variant="outline" className="font-mono">
+                        {(row.baseRate * 100).toFixed(0)}%
+                      </Badge>
                     </td>
                     <td className="py-2.5 pr-3 text-right text-amber-700">
                       − {formatINR(row.commission)}
@@ -894,11 +1006,121 @@ export function OwnerEarnings() {
                     </td>
                   </tr>
                 ))}
+                {perVenue.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="py-6 text-center text-muted-foreground text-sm">
+                      No active bookings yet
+                    </td>
+                  </tr>
+                )}
               </tbody>
+              {perVenue.length > 0 && (
+                <tfoot>
+                  <tr className="border-t-2 font-semibold">
+                    <td colSpan={3} className="py-2.5 pr-3">
+                      Total
+                    </td>
+                    <td className="py-2.5 pr-3 text-right">
+                      {formatINR(grossRevenue)}
+                    </td>
+                    <td />
+                    <td className="py-2.5 pr-3 text-right text-amber-700">
+                      − {formatINR(totalCommission)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-primary">
+                      {formatINR(netEarnings)}
+                    </td>
+                  </tr>
+                </tfoot>
+              )}
             </table>
           </div>
         </CardContent>
       </Card>
+
+      {/* Per-booking commission details */}
+      {bookingBreakdown.length > 0 && (
+        <Card>
+          <CardContent className="p-5">
+            <h3 className="font-semibold mb-1">Per-booking commission</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              See exactly how each booking&apos;s commission was calculated
+            </p>
+            <div className="overflow-x-auto fancy-scroll">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground border-b">
+                    <th className="py-2 pr-3">Booking</th>
+                    <th className="py-2 pr-3">Venue</th>
+                    <th className="py-2 pr-3 text-right">Amount</th>
+                    <th className="py-2 pr-3 text-center">Base</th>
+                    <th className="py-2 pr-3 text-center">Slab</th>
+                    <th className="py-2 pr-3 text-center">Final</th>
+                    <th className="py-2 pr-3 text-right">Commission</th>
+                    <th className="py-2 pr-3 text-right">Net</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bookingBreakdown.map(({ booking, venue, breakdown }) => (
+                    <tr
+                      key={booking.id}
+                      className="border-b last:border-0 hover:bg-secondary/30"
+                    >
+                      <td className="py-2 pr-3">
+                        <div className="font-mono text-[11px]">
+                          {booking.id.toUpperCase()}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {booking.eventDate}
+                        </div>
+                      </td>
+                      <td className="py-2 pr-3">
+                        <div className="text-xs font-medium truncate max-w-[160px]">
+                          {venue.name}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {venue.type}
+                        </div>
+                      </td>
+                      <td className="py-2 pr-3 text-right">
+                        {formatINR(booking.bookingAmount)}
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs">
+                        {(breakdown.baseRatePercent * 100).toFixed(0)}%
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs">
+                        {breakdown.slabDiscountPercent > 0 ? (
+                          <span className="text-emerald-700">
+                            −{breakdown.slabDiscountPercent}pp
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3 text-center">
+                        <Badge variant="outline" className="font-mono">
+                          {(breakdown.finalRatePercent * 100).toFixed(1)}%
+                          {breakdown.floorApplied && (
+                            <span className="ml-1 text-amber-700" title="Floor of 5% applied">
+                              ⚐
+                            </span>
+                          )}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-3 text-right text-amber-700">
+                        {formatINR(breakdown.commissionAmount)}
+                      </td>
+                      <td className="py-2 pr-3 text-right font-semibold text-primary">
+                        {formatINR(breakdown.ownerPayout)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardContent className="p-5">

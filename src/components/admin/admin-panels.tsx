@@ -33,6 +33,7 @@ import {
   Phone,
   Mail,
   PartyPopper,
+  Info,
 } from "lucide-react";
 import {
   useAppStore,
@@ -40,6 +41,12 @@ import {
   formatDate,
   computeBookingAdvance,
 } from "@/lib/store";
+import {
+  computeCommission,
+  COMMISSION_BASE_RATES,
+  COMMISSION_SLABS,
+  COMMISSION_FLOOR_PERCENT,
+} from "@/lib/commission";
 import {
   BarChart,
   Bar,
@@ -62,10 +69,20 @@ export function AdminDashboard() {
   const totalVenues = venues.length;
   const pendingApprovals = venues.filter((v) => v.status === "pending").length;
   const totalBookings = bookings.length;
-  const grossGMV = bookings
-    .filter((b) => b.status !== "cancelled")
-    .reduce((s, b) => s + b.totalAmount, 0);
-  const commissionEarned = Math.round(grossGMV * 0.1);
+  const activeBookings = bookings.filter((b) => b.status !== "cancelled");
+  const grossGMV = activeBookings.reduce((s, b) => s + b.totalAmount, 0);
+  // Tiered commission: sum of per-booking commissionAmount
+  const commissionEarned = activeBookings.reduce((s, b) => {
+    const venue = venues.find((v) => v.id === b.venueId);
+    if (!venue) return s;
+    return s + computeCommission(venue.type, b.bookingAmount).commissionAmount;
+  }, 0);
+  const avgCommissionRate =
+    activeBookings.length > 0
+      ? (commissionEarned /
+          activeBookings.reduce((s, b) => s + b.bookingAmount, 0)) *
+        100
+      : 0;
   const activeCustomers = new Set(
     bookings.map((b) => b.customerEmail)
   ).size;
@@ -116,8 +133,9 @@ export function AdminDashboard() {
           icon={TrendingUp}
           label="Commission earned"
           value={formatINR(commissionEarned)}
-          delta="10% rate"
+          delta={`Avg ${avgCommissionRate.toFixed(1)}%`}
           accent="text-emerald-700"
+          onClick={() => setAdminView("commission")}
         />
       </div>
 
@@ -425,15 +443,15 @@ export function AdminApprovals() {
                   />
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-sm">
-                  <Info label="Type" value={reviewVenue.type} />
-                  <Info label="City" value={reviewVenue.city} />
-                  <Info label="Area" value={reviewVenue.area} />
-                  <Info label="Address" value={reviewVenue.address} />
-                  <Info
+                  <InfoRow label="Type" value={reviewVenue.type} />
+                  <InfoRow label="City" value={reviewVenue.city} />
+                  <InfoRow label="Area" value={reviewVenue.area} />
+                  <InfoRow label="Address" value={reviewVenue.address} />
+                  <InfoRow
                     label="Capacity"
                     value={`${reviewVenue.capacityMin}–${reviewVenue.capacityMax}`}
                   />
-                  <Info
+                  <InfoRow
                     label="Weekday / Weekend"
                     value={`${formatINR(reviewVenue.priceWeekday)} / ${formatINR(reviewVenue.priceWeekend)}`}
                   />
@@ -493,7 +511,7 @@ export function AdminApprovals() {
   );
 }
 
-function Info({ label, value }: { label: string; value: string }) {
+function InfoRow({ label, value }: { label: string; value: string }) {
   return (
     <div>
       <div className="text-[11px] text-muted-foreground uppercase tracking-wide">
@@ -671,20 +689,28 @@ function StatusBadge({ status }: { status: string }) {
 
 export function AdminCommission() {
   const { bookings, venues } = useAppStore();
-  const rate = 0.1;
-  const grossGMV = bookings
-    .filter((b) => b.status !== "cancelled")
-    .reduce((s, b) => s + b.totalAmount, 0);
-  const collected = bookings
-    .filter((b) => b.status !== "cancelled")
-    .reduce((s, b) => s + b.bookingAmount, 0);
-  const commissionCollected = Math.round(collected * rate);
-  const pendingPayouts = Math.round(
-    bookings
-      .filter((b) => b.status === "completed")
-      .reduce((s, b) => s + b.bookingAmount, 0) * (1 - rate)
-  );
 
+  // Compute commission per booking (tiered)
+  const activeBookings = bookings.filter((b) => b.status !== "cancelled");
+  const perBooking = activeBookings.map((b) => {
+    const venue = venues.find((v) => v.id === b.venueId)!;
+    const breakdown = computeCommission(venue.type, b.bookingAmount);
+    return { booking: b, venue, breakdown };
+  });
+
+  const grossGMV = perBooking.reduce((s, r) => s + r.booking.totalAmount, 0);
+  const collected = perBooking.reduce((s, r) => s + r.booking.bookingAmount, 0);
+  const commissionCollected = perBooking.reduce(
+    (s, r) => s + r.breakdown.commissionAmount,
+    0
+  );
+  const pendingPayouts = perBooking
+    .filter((r) => r.booking.status === "completed")
+    .reduce((s, r) => s + r.breakdown.ownerPayout, 0);
+  const effectiveRate =
+    collected > 0 ? (commissionCollected / collected) * 100 : 0;
+
+  // Per-owner aggregate
   const perOwner = venues
     .reduce<
       {
@@ -694,50 +720,66 @@ export function AdminCommission() {
         commission: number;
         net: number;
         bookings: number;
+        avgRate: number;
       }[]
     >((acc, v) => {
-      const vBookings = bookings.filter(
-        (b) => b.venueId === v.id && b.status !== "cancelled"
+      const vRows = perBooking.filter((r) => r.venue.id === v.id);
+      const gross = vRows.reduce((s, r) => s + r.booking.bookingAmount, 0);
+      const commission = vRows.reduce(
+        (s, r) => s + r.breakdown.commissionAmount,
+        0
       );
-      const gross = vBookings.reduce((s, b) => s + b.bookingAmount, 0);
       const existing = acc.find((o) => o.ownerId === v.ownerId);
       if (existing) {
         existing.gross += gross;
-        existing.bookings += vBookings.length;
+        existing.commission += commission;
+        existing.bookings += vRows.length;
       } else {
         acc.push({
           ownerName: v.ownerName,
           ownerId: v.ownerId,
           gross,
-          commission: 0,
-          net: 0,
-          bookings: vBookings.length,
+          commission,
+          net: gross - commission,
+          bookings: vRows.length,
+          avgRate: 0,
         });
       }
       return acc;
     }, [])
     .map((o) => ({
       ...o,
-      commission: Math.round(o.gross * rate),
-      net: o.gross - Math.round(o.gross * rate),
-    }));
+      net: o.gross - o.commission,
+      avgRate: o.gross > 0 ? (o.commission / o.gross) * 100 : 0,
+    }))
+    .sort((a, b) => b.commission - a.commission);
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5">
-      <div>
-        <h1 className="font-serif text-3xl font-bold">Commission & Payouts</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          Platform commission: <strong>10%</strong> · Settled to venue owners on
-          5th of every month
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="font-serif text-3xl font-bold">Commission & Payouts</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Tiered commission model · Settled to venue owners on 5th of every
+            month
+          </p>
+        </div>
+        <Badge variant="outline" className="text-xs">
+          Effective rate:{" "}
+          <strong className="ml-1">{effectiveRate.toFixed(2)}%</strong>
+        </Badge>
       </div>
 
+      {/* KPI cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="p-5 gap-0">
           <div className="text-xs text-muted-foreground uppercase">
             Gross GMV (all time)
           </div>
           <div className="text-2xl font-bold mt-1">{formatINR(grossGMV)}</div>
+          <div className="text-xs text-muted-foreground mt-1">
+            Across {activeBookings.length} active bookings
+          </div>
         </Card>
         <Card className="p-5 gap-0">
           <div className="text-xs text-muted-foreground uppercase">
@@ -745,6 +787,9 @@ export function AdminCommission() {
           </div>
           <div className="text-2xl font-bold mt-1 text-emerald-700">
             {formatINR(commissionCollected)}
+          </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            Avg {effectiveRate.toFixed(2)}% on collected advances
           </div>
         </Card>
         <Card className="p-5 gap-0">
@@ -754,9 +799,82 @@ export function AdminCommission() {
           <div className="text-2xl font-bold mt-1 text-amber-700">
             {formatINR(pendingPayouts)}
           </div>
+          <div className="text-xs text-muted-foreground mt-1">
+            From completed bookings awaiting settlement
+          </div>
         </Card>
       </div>
 
+      {/* Commission policy overview */}
+      <Card className="border-primary/15">
+        <CardContent className="p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <div className="grid size-8 place-items-center rounded-full bg-accent text-accent-foreground">
+              <Info className="size-4" />
+            </div>
+            <div>
+              <h3 className="font-semibold">Commission policy in effect</h3>
+              <p className="text-xs text-muted-foreground">
+                Tier 1 base rate by venue type, then Tier 2 high-value slab
+                discount, with a 5% floor
+              </p>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
+                Tier 1 · Base rate by venue type
+              </div>
+              <div className="grid grid-cols-2 gap-1.5 text-xs">
+                {Object.entries(COMMISSION_BASE_RATES).map(([type, rate]) => (
+                  <div
+                    key={type}
+                    className="flex items-center justify-between bg-secondary/40 rounded px-2 py-1 border"
+                  >
+                    <span className="truncate">{type}</span>
+                    <Badge variant="outline" className="font-mono">
+                      {(rate * 100).toFixed(0)}%
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <div className="text-[11px] uppercase tracking-wide text-muted-foreground mb-2">
+                Tier 2 · High-value slab discount
+              </div>
+              <div className="space-y-1.5 text-xs">
+                {COMMISSION_SLABS.map((slab) => (
+                  <div
+                    key={slab.label}
+                    className="flex items-center justify-between bg-secondary/40 rounded px-2 py-1.5 border"
+                  >
+                    <span>{slab.label}</span>
+                    <Badge
+                      variant="outline"
+                      className={
+                        slab.discountPercent > 0
+                          ? "text-emerald-700 border-emerald-200"
+                          : "text-muted-foreground"
+                      }
+                    >
+                      {slab.discountPercent > 0
+                        ? `−${slab.discountPercent}pp`
+                        : "base"}
+                    </Badge>
+                  </div>
+                ))}
+                <div className="text-[10px] text-muted-foreground pt-1">
+                  Floor: final rate never goes below{" "}
+                  <strong>{COMMISSION_FLOOR_PERCENT}%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Per-owner settlements */}
       <Card>
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Per-owner settlements</h3>
@@ -767,7 +885,8 @@ export function AdminCommission() {
                   <th className="py-2 pr-3">Venue owner</th>
                   <th className="py-2 pr-3 text-center">Bookings</th>
                   <th className="py-2 pr-3 text-right">Gross collected</th>
-                  <th className="py-2 pr-3 text-right">Commission (10%)</th>
+                  <th className="py-2 pr-3 text-center">Avg rate</th>
+                  <th className="py-2 pr-3 text-right">Commission</th>
                   <th className="py-2 pr-3 text-right">Net payable</th>
                   <th className="py-2 pr-3 text-right">Action</th>
                 </tr>
@@ -780,7 +899,12 @@ export function AdminCommission() {
                     <td className="py-2.5 pr-3 text-right">
                       {formatINR(row.gross)}
                     </td>
-                    <td className="py-2.5 pr-3 text-right text-amber-700">
+                    <td className="py-2.5 pr-3 text-center">
+                      <Badge variant="outline" className="font-mono">
+                        {row.avgRate.toFixed(2)}%
+                      </Badge>
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-emerald-700">
                       {formatINR(row.commission)}
                     </td>
                     <td className="py-2.5 pr-3 text-right font-semibold text-primary">
@@ -793,11 +917,115 @@ export function AdminCommission() {
                     </td>
                   </tr>
                 ))}
+                {perOwner.length > 0 && (
+                  <tr className="border-t-2 font-semibold">
+                    <td colSpan={2} className="py-2.5 pr-3">
+                      Total
+                    </td>
+                    <td className="py-2.5 pr-3 text-right">
+                      {formatINR(collected)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-center">
+                      {effectiveRate.toFixed(2)}%
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-emerald-700">
+                      {formatINR(commissionCollected)}
+                    </td>
+                    <td className="py-2.5 pr-3 text-right text-primary">
+                      {formatINR(collected - commissionCollected)}
+                    </td>
+                    <td />
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
         </CardContent>
       </Card>
+
+      {/* Per-booking commission details */}
+      {perBooking.length > 0 && (
+        <Card>
+          <CardContent className="p-5">
+            <h3 className="font-semibold mb-1">Per-booking commission log</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              Audit trail of how each booking&apos;s commission was calculated
+            </p>
+            <div className="overflow-x-auto fancy-scroll">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="text-left text-xs text-muted-foreground border-b">
+                    <th className="py-2 pr-3">Booking</th>
+                    <th className="py-2 pr-3">Owner</th>
+                    <th className="py-2 pr-3">Venue type</th>
+                    <th className="py-2 pr-3 text-right">Collected</th>
+                    <th className="py-2 pr-3 text-center">Base</th>
+                    <th className="py-2 pr-3 text-center">Slab</th>
+                    <th className="py-2 pr-3 text-center">Final</th>
+                    <th className="py-2 pr-3 text-right">Commission</th>
+                    <th className="py-2 pr-3 text-right">Owner payout</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {perBooking.map(({ booking, venue, breakdown }) => (
+                    <tr
+                      key={booking.id}
+                      className="border-b last:border-0 hover:bg-secondary/30"
+                    >
+                      <td className="py-2 pr-3">
+                        <div className="font-mono text-[11px]">
+                          {booking.id.toUpperCase()}
+                        </div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {booking.eventDate}
+                        </div>
+                      </td>
+                      <td className="py-2 pr-3 text-xs">
+                        {venue.ownerName}
+                      </td>
+                      <td className="py-2 pr-3 text-xs">{venue.type}</td>
+                      <td className="py-2 pr-3 text-right">
+                        {formatINR(booking.bookingAmount)}
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs">
+                        {(breakdown.baseRatePercent * 100).toFixed(0)}%
+                      </td>
+                      <td className="py-2 pr-3 text-center text-xs">
+                        {breakdown.slabDiscountPercent > 0 ? (
+                          <span className="text-emerald-700">
+                            −{breakdown.slabDiscountPercent}pp
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </td>
+                      <td className="py-2 pr-3 text-center">
+                        <Badge variant="outline" className="font-mono">
+                          {(breakdown.finalRatePercent * 100).toFixed(1)}%
+                          {breakdown.floorApplied && (
+                            <span
+                              className="ml-1 text-amber-700"
+                              title="Floor of 5% applied"
+                            >
+                              ⚐
+                            </span>
+                          )}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-3 text-right text-emerald-700 font-medium">
+                        {formatINR(breakdown.commissionAmount)}
+                      </td>
+                      <td className="py-2 pr-3 text-right text-primary font-semibold">
+                        {formatINR(breakdown.ownerPayout)}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
