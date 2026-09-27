@@ -17,7 +17,7 @@ export function SiteFooter() {
               <Heart className="size-4 fill-current" />
             </div>
             <div className="font-serif text-base font-bold">
-              Vivaah<span className="gold-text">Setu</span>
+              Manda<span className="gold-text">pam</span>
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
@@ -134,7 +134,7 @@ export function SiteFooter() {
               <button className="hover:text-primary">Pricing & commission</button>
             </li>
             <li className="pt-2 flex items-center gap-2">
-              <Mail className="size-3.5" /> hello@vivaahsetu.in
+              <Mail className="size-3.5" /> hello@mandapam.in
             </li>
             <li className="flex items-center gap-2">
               <Phone className="size-3.5" /> +91 98250 00000
@@ -143,7 +143,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t py-4 text-center text-xs text-muted-foreground">
-        © {new Date().getFullYear()} VivaahSetu Technologies Pvt. Ltd. · Made
+        © {new Date().getFullYear()} Mandapam Technologies Pvt. Ltd. · Made
         with <Heart className="inline size-3 fill-primary text-primary" /> in
         India
       </div>

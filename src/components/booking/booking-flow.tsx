@@ -417,7 +417,7 @@ function BookingFlowContent({
               onChange={(e) =>
                 setForm({ ...form, couponCode: e.target.value.toUpperCase() })
               }
-              placeholder="Coupon code (try VIVAAH1000)"
+              placeholder="Coupon code (try MANDAPAM1000)"
               className="flex-1"
             />
             <Button

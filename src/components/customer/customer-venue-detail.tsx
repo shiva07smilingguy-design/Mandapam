@@ -542,7 +542,7 @@ export function CustomerVenueDetail() {
                 <Phone className="size-4 text-muted-foreground" /> +91 98250 00000
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <Mail className="size-4 text-muted-foreground" /> owner@vivaahsetu.in
+                <Mail className="size-4 text-muted-foreground" /> owner@mandapam.in
               </div>
               <Button variant="outline" className="w-full" size="sm">
                 <Phone className="size-4 mr-1.5" /> Request callback

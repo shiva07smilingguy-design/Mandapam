@@ -114,14 +114,14 @@ export function SiteHeader() {
         <button
           onClick={() => setView("home")}
           className="flex items-center gap-2 shrink-0"
-          aria-label="VivaahSetu home"
+          aria-label="Mandapam home"
         >
           <div className="grid size-9 place-items-center rounded-full wedding-gradient text-primary-foreground">
             <Heart className="size-4.5 fill-current" />
           </div>
           <div className="hidden sm:block leading-none text-left">
             <div className="font-serif text-base font-bold tracking-tight">
-              Vivaah<span className="gold-text">Setu</span>
+              Manda<span className="gold-text">pam</span>
             </div>
             <div className="text-[10px] text-muted-foreground uppercase tracking-widest">
               Weddings · Venues · Memories
@@ -241,7 +241,7 @@ export function SiteHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-72">
               <SheetHeader>
-                <SheetTitle>VivaahSetu Menu</SheetTitle>
+                <SheetTitle>Mandapam Menu</SheetTitle>
               </SheetHeader>
               <nav className="mt-4 flex flex-col gap-1">
                 {navItems.map((item) => {

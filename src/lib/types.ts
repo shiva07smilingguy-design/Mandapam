@@ -1,4 +1,4 @@
-// Shared domain types for the VivaahSetu wedding venue marketplace.
+// Shared domain types for the Mandapam wedding venue marketplace.
 
 export type Role = "customer" | "owner" | "admin";
 

@@ -35,7 +35,7 @@ export const SEED_USERS: AppUser[] = [
   {
     id: "u-admin-1",
     name: "Admin",
-    email: "admin@vivaahsetu.in",
+    email: "admin@mandapam.in",
     phone: "+91 98250 00000",
     role: "admin",
   },
@@ -99,7 +99,7 @@ export const SEED_VENUES: Venue[] = [
       },
       {
         id: "p-001-platinum",
-        name: "Platinum Vivaah",
+        name: "Platinum Mandapam",
         description: "All-inclusive wedding with stage, mandap, lighting, catering, decor & hospitality.",
         price: 625000,
         includes: [
@@ -777,7 +777,7 @@ export const SEED_BOOKINGS: Booking[] = [
 export const SEED_COUPONS: Coupon[] = [
   {
     id: "c-1",
-    code: "VIVAAH1000",
+    code: "MANDAPAM1000",
     description: "Flat ₹1,000 off on bookings above ₹50,000",
     type: "flat",
     value: 1000,

@@ -366,7 +366,7 @@ export function CustomerHome() {
               </h3>
               <p className="mt-3 text-white/85 text-sm leading-relaxed">
                 Manage your calendar, packages, pricing and payouts — all from a
-                single dashboard. Earn up to 3× more with VivaahSetu&apos;s
+                single dashboard. Earn up to 3× more with Mandapam&apos;s
                 pan-India reach.
               </p>
               <div className="mt-6 flex flex-wrap gap-3">

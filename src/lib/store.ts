@@ -339,7 +339,7 @@ export const useAppStore = create<AppState>()(
         set((s) => ({ coupons: s.coupons.filter((c) => c.id !== id) })),
     }),
     {
-      name: "vivaahsetu-store",
+      name: "mandapam-store",
       storage: createJSONStorage(() => localStorage),
       // Don't persist currentUser to avoid stale session
       partialize: (state) => ({

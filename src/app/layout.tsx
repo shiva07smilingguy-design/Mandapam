@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VivaahSetu — Wedding Venue Booking Marketplace",
+  title: "Mandapam — Wedding Venue Booking Marketplace",
   description:
     "Discover and book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues across India. Check live availability, compare packages, pay online.",
   keywords: [
@@ -24,14 +24,14 @@ export const metadata: Metadata = {
     "banquet hall",
     "party plot",
     "wedding resort",
-    "VivaahSetu",
+    "Mandapam",
   ],
-  authors: [{ name: "VivaahSetu" }],
+  authors: [{ name: "Mandapam" }],
   openGraph: {
-    title: "VivaahSetu — Wedding Venue Booking Marketplace",
+    title: "Mandapam — Wedding Venue Booking Marketplace",
     description:
       "Book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues online.",
-    siteName: "VivaahSetu",
+    siteName: "Mandapam",
     type: "website",
   },
 };
