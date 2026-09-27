@@ -52,3 +52,22 @@ prompt
 server.log
 # Skills directory
 /skills/
+
+# Sandbox infrastructure (not part of the app)
+/.zscripts/
+/mini-services/
+/examples/
+/tests/
+/upload/
+Caddyfile
+.z-ai-config
+
+# Local SQLite database (regenerable from prisma schema)
+/db/*.db
+/db/*.db-journal
+
+# OS / editor
+Thumbs.db
+.idea/
+.vscode/
+*.swp
