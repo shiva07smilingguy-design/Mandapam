@@ -209,25 +209,38 @@ export function CustomerHome() {
               {
                 icon: PhoneCall,
                 title: "24×7 concierge",
-                sub: "Always one call away",
+                sub: "+91 90161 80583",
               },
-            ].map((b) => (
-              <Card key={b.title} className="p-3 gap-0">
-                <div className="flex items-center gap-2.5">
-                  <div className="grid size-9 place-items-center rounded-full bg-accent text-accent-foreground shrink-0">
-                    <b.icon className="size-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold truncate">
-                      {b.title}
+            ].map((b) => {
+              const isPhone = b.title === "24×7 concierge";
+              const Wrapper = (props: { children: React.ReactNode }) =>
+                isPhone ? (
+                  <a href="tel:+919016180583" className="block">
+                    <Card className="p-3 gap-0 hover:border-primary hover:shadow-md transition cursor-pointer">
+                      {props.children}
+                    </Card>
+                  </a>
+                ) : (
+                  <Card className="p-3 gap-0">{props.children}</Card>
+                );
+              return (
+                <Wrapper key={b.title}>
+                  <div className="flex items-center gap-2.5">
+                    <div className="grid size-9 place-items-center rounded-full bg-accent text-accent-foreground shrink-0">
+                      <b.icon className="size-4" />
                     </div>
-                    <div className="text-[11px] text-muted-foreground truncate">
-                      {b.sub}
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold truncate">
+                        {b.title}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {b.sub}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Card>
-            ))}
+                </Wrapper>
+              );
+            })}
           </div>
         </div>
       </section>

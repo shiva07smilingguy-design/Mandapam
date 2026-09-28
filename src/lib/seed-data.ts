@@ -36,7 +36,7 @@ export const SEED_USERS: AppUser[] = [
     id: "u-admin-1",
     name: "Admin",
     email: "admin@mandapam.in",
-    phone: "+91 98250 00000",
+    phone: "+91 90161 80583",
     role: "admin",
   },
 ];

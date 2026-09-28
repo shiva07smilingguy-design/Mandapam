@@ -133,11 +133,16 @@ export function SiteFooter() {
             <li>
               <button className="hover:text-primary">Pricing & commission</button>
             </li>
-            <li className="pt-2 flex items-center gap-2">
+            <li className="flex items-center gap-2">
               <Mail className="size-3.5" /> hello@mandapam.in
             </li>
-            <li className="flex items-center gap-2">
-              <Phone className="size-3.5" /> +91 98250 00000
+            <li>
+              <a
+                href="tel:+919016180583"
+                className="flex items-center gap-2 hover:text-primary transition"
+              >
+                <Phone className="size-3.5" /> +91 90161 80583
+              </a>
             </li>
           </ul>
         </div>

@@ -534,18 +534,28 @@ export function CustomerVenueDetail() {
 
           <Card>
             <CardContent className="p-4 space-y-2">
-              <div className="font-semibold text-sm">Contact venue owner</div>
+              <div className="font-semibold text-sm">Need help? Talk to Mandapam</div>
               <div className="text-xs text-muted-foreground">
-                {venue.ownerName}
+                Our concierge connects you with {venue.ownerName} or any venue owner.
               </div>
+              <a
+                href="tel:+919016180583"
+                className="flex items-center gap-2 text-sm hover:text-primary transition"
+              >
+                <Phone className="size-4 text-muted-foreground" /> +91 90161 80583
+              </a>
               <div className="flex items-center gap-2 text-sm">
-                <Phone className="size-4 text-muted-foreground" /> +91 98250 00000
+                <Mail className="size-4 text-muted-foreground" /> hello@mandapam.in
               </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Mail className="size-4 text-muted-foreground" /> owner@mandapam.in
-              </div>
-              <Button variant="outline" className="w-full" size="sm">
-                <Phone className="size-4 mr-1.5" /> Request callback
+              <Button
+                asChild
+                variant="outline"
+                className="w-full"
+                size="sm"
+              >
+                <a href="tel:+919016180583">
+                  <Phone className="size-4 mr-1.5" /> Call to book
+                </a>
               </Button>
             </CardContent>
           </Card>
