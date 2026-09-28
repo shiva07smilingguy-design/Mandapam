@@ -17,22 +17,36 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Mandapam — Wedding Venue Booking Marketplace",
   description:
-    "Discover and book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues across India. Check live availability, compare packages, pay online.",
+    "Discover and book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues in Vadodara. Check live availability, compare packages, pay online.",
   keywords: [
     "wedding venue",
     "marriage hall booking",
     "banquet hall",
     "party plot",
     "wedding resort",
+    "Vadodara wedding venue",
     "Mandapam",
   ],
   authors: [{ name: "Mandapam" }],
+  icons: {
+    icon: "/mandapam-logo.svg",
+    shortcut: "/mandapam-logo.svg",
+    apple: "/mandapam-logo.svg",
+  },
   openGraph: {
     title: "Mandapam — Wedding Venue Booking Marketplace",
     description:
-      "Book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues online.",
+      "Book marriage plots, banquet halls, party plots, lawns, resorts and wedding venues in Vadodara. NRI concierge available.",
     siteName: "Mandapam",
     type: "website",
+    images: ["/mandapam-logo.svg"],
+  },
+  twitter: {
+    card: "summary",
+    title: "Mandapam — Wedding Venue Booking Marketplace",
+    description:
+      "Book wedding venues in Vadodara. NRI concierge available.",
+    images: ["/mandapam-logo.svg"],
   },
 };
 

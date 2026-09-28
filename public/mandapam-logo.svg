@@ -1,0 +1,59 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mandapam logo">
+  <defs>
+    <!-- Wedding maroon gradient -->
+    <linearGradient id="mpMaroon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B1E3F" />
+      <stop offset="100%" stop-color="#6B0F2A" />
+    </linearGradient>
+    <!-- Rose gold gradient -->
+    <linearGradient id="mpGold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#D4A574" />
+      <stop offset="100%" stop-color="#B8860B" />
+    </linearGradient>
+    <linearGradient id="mpGoldLight" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D03F" />
+      <stop offset="100%" stop-color="#D4A574" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background circle with maroon gradient -->
+  <circle cx="32" cy="32" r="30" fill="url(#mpMaroon)" />
+
+  <!-- Decorative outer ring (rose gold) -->
+  <circle cx="32" cy="32" r="28" stroke="url(#mpGold)" stroke-width="0.8" fill="none" opacity="0.6" />
+  <circle cx="32" cy="32" r="26" stroke="url(#mpGold)" stroke-width="0.4" fill="none" opacity="0.4" />
+
+  <!-- Mandap dome (curved top) -->
+  <path d="M 16 38 Q 32 14 48 38 L 48 40 L 16 40 Z"
+        fill="url(#mpGoldLight)" />
+
+  <!-- Dome finial (kalash on top) -->
+  <circle cx="32" cy="14" r="1.8" fill="url(#mpGold)" />
+  <line x1="32" y1="9" x2="32" y2="13" stroke="url(#mpGold)" stroke-width="1.2" stroke-linecap="round" />
+  <circle cx="32" cy="8" r="0.9" fill="url(#mpGold)" />
+
+  <!-- Dome decorative arches (pillars of the mandap) -->
+  <line x1="20" y1="40" x2="20" y2="50" stroke="url(#mpGold)" stroke-width="1.6" stroke-linecap="round" />
+  <line x1="44" y1="40" x2="44" y2="50" stroke="url(#mpGold)" stroke-width="1.6" stroke-linecap="round" />
+
+  <!-- Pillar bases -->
+  <rect x="18" y="49" width="4" height="2" rx="0.5" fill="url(#mpGold)" />
+  <rect x="42" y="49" width="4" height="2" rx="0.5" fill="url(#mpGold)" />
+
+  <!-- Heart in the center of the mandap (the couple) -->
+  <path d="M 32 30
+           C 30 27, 26 27, 26 31
+           C 26 34, 32 38, 32 38
+           C 32 38, 38 34, 38 31
+           C 38 27, 34 27, 32 30 Z"
+        fill="#FFFFFF" opacity="0.95" />
+
+  <!-- Small decorative dot pattern on dome (rangoli hint) -->
+  <circle cx="26" cy="28" r="0.6" fill="#FFFFFF" opacity="0.6" />
+  <circle cx="38" cy="28" r="0.6" fill="#FFFFFF" opacity="0.6" />
+  <circle cx="32" cy="22" r="0.6" fill="#FFFFFF" opacity="0.6" />
+
+  <!-- Base platform -->
+  <rect x="14" y="51" width="36" height="2.5" rx="0.5" fill="url(#mpGold)" />
+  <rect x="12" y="53.5" width="40" height="1.5" rx="0.3" fill="url(#mpGold)" opacity="0.7" />
+</svg>

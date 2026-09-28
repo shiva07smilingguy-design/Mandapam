@@ -116,9 +116,13 @@ export function SiteHeader() {
           className="flex items-center gap-2 shrink-0"
           aria-label="Mandapam home"
         >
-          <div className="grid size-9 place-items-center rounded-full wedding-gradient text-primary-foreground">
-            <Heart className="size-4.5 fill-current" />
-          </div>
+          <img
+            src="/mandapam-logo.svg"
+            alt="Mandapam logo — mandap dome with heart"
+            width={36}
+            height={36}
+            className="size-9 shrink-0 drop-shadow-sm"
+          />
           <div className="hidden sm:block leading-none text-left">
             <div className="font-serif text-base font-bold tracking-tight">
               Manda<span className="gold-text">pam</span>

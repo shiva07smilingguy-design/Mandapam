@@ -14,9 +14,13 @@ export function SiteFooter() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 grid grid-cols-2 md:grid-cols-4 gap-8">
         <div className="col-span-2 md:col-span-1">
           <div className="flex items-center gap-2 mb-3">
-            <div className="grid size-8 place-items-center rounded-full wedding-gradient text-primary-foreground">
-              <Heart className="size-4 fill-current" />
-            </div>
+            <img
+              src="/mandapam-logo.svg"
+              alt="Mandapam logo"
+              width={32}
+              height={32}
+              className="size-8 shrink-0"
+            />
             <div className="font-serif text-base font-bold">
               Manda<span className="gold-text">pam</span>
             </div>
