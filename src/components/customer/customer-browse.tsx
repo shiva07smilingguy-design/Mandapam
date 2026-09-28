@@ -32,7 +32,12 @@ import {
   Calendar,
 } from "lucide-react";
 import { useAppStore, formatINR, isVenueAvailable } from "@/lib/store";
-import { ALL_AMENITIES, CITIES, VENUE_TYPES } from "@/lib/seed-data";
+import {
+  ALL_AMENITIES,
+  CITIES,
+  COMING_SOON_CITIES,
+  VENUE_TYPES,
+} from "@/lib/seed-data";
 import { amenityIcon } from "@/lib/amenity-icons";
 
 export function CustomerBrowse() {
@@ -142,6 +147,11 @@ export function CustomerBrowse() {
             {CITIES.map((c) => (
               <SelectItem key={c} value={c}>
                 {c}
+              </SelectItem>
+            ))}
+            {COMING_SOON_CITIES.map((c) => (
+              <SelectItem key={c} value={`__soon_${c}`} disabled>
+                {c} · Coming soon
               </SelectItem>
             ))}
           </SelectContent>

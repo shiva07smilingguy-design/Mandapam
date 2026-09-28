@@ -29,9 +29,20 @@ import {
   Building2,
   Palmtree,
   Crown,
+  Plane,
+  Globe2,
+  Video,
+  Languages,
+  MessageCircle,
+  Clock4,
 } from "lucide-react";
 import { useAppStore, formatINR } from "@/lib/store";
-import { CITIES, EVENT_TYPES, VENUE_TYPES } from "@/lib/seed-data";
+import {
+  CITIES,
+  COMING_SOON_CITIES,
+  EVENT_TYPES,
+  VENUE_TYPES,
+} from "@/lib/seed-data";
 import { motion } from "framer-motion";
 
 const TYPE_ICONS: Record<string, typeof Building2> = {
@@ -117,6 +128,11 @@ export function CustomerHome() {
                         {CITIES.map((c) => (
                           <SelectItem key={c} value={c}>
                             {c}
+                          </SelectItem>
+                        ))}
+                        {COMING_SOON_CITIES.map((c) => (
+                          <SelectItem key={c} value={`__soon_${c}`} disabled>
+                            {c} · Coming soon
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -363,6 +379,182 @@ export function CustomerHome() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Coming Soon cities banner */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Card className="border-dashed border-2 bg-secondary/20">
+          <CardContent className="p-5 sm:p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold flex items-center gap-2">
+                  <Plane className="size-5 text-primary" />
+                  We&apos;re taking off in more cities soon
+                </h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Mandapam currently operates in{" "}
+                  <strong className="text-foreground">Vadodara</strong> —
+                  we&apos;re expanding to these cities next. Want us to launch in
+                  yours?
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  window.location.href = "mailto:hello@mandapam.in?subject=Launch Mandapam in my city";
+                }}
+              >
+                Request your city
+              </Button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {COMING_SOON_CITIES.map((c) => (
+                <Badge
+                  key={c}
+                  variant="outline"
+                  className="py-1.5 px-3 font-normal bg-background"
+                >
+                  <MapPin className="size-3 mr-1 text-muted-foreground" />
+                  {c}
+                  <span className="ml-1.5 text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1.5 py-0.5">
+                    Soon
+                  </span>
+                </Badge>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* NRI dedicated section */}
+      <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.4fr] gap-5">
+          {/* Left: NRI intro card */}
+          <Card className="overflow-hidden p-0 border-0">
+            <div className="wedding-gradient text-primary-foreground p-6 sm:p-8 h-full flex flex-col justify-between">
+              <div>
+                <Badge className="bg-white/15 text-white border-0 mb-3">
+                  <Globe2 className="size-3 mr-1" /> For NRI couples & families
+                </Badge>
+                <h3 className="font-serif text-2xl sm:text-3xl font-bold leading-tight">
+                  Planning your Indian wedding from abroad?
+                </h3>
+                <p className="mt-3 text-white/85 text-sm leading-relaxed">
+                  Our dedicated NRI concierge desk handles everything remotely —
+                  venue shortlisting via video tours, virtual site visits,
+                  international payments, and on-ground coordination in Vadodara.
+                  You land only for the wedding; we handle the rest.
+                </p>
+              </div>
+              <div className="mt-6 space-y-2 text-sm">
+                <div className="flex items-center gap-2 text-white/90">
+                  <Languages className="size-4 shrink-0" />
+                  English, Hindi, Gujarati concierge
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <Clock4 className="size-4 shrink-0" />
+                  24×7 coordination across time zones
+                </div>
+                <div className="flex items-center gap-2 text-white/90">
+                  <Wallet className="size-4 shrink-0" />
+                  USD, GBP, EUR, AED, SGD payments accepted
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Right: NRI services + contact */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card className="p-5 gap-0">
+              <div className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground mb-3">
+                <Video className="size-5" />
+              </div>
+              <h4 className="font-semibold">Video venue tours</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Live WhatsApp video tours of any 3 shortlisted venues — no need
+                to fly down just to see options.
+              </p>
+            </Card>
+            <Card className="p-5 gap-0">
+              <div className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground mb-3">
+                <ShieldCheck className="size-5" />
+              </div>
+              <h4 className="font-semibold">Verified legal paperwork</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                We handle all permits, FIR letters, fire NOC, and venue contracts
+                on your behalf — shared digitally with e-sign.
+              </p>
+            </Card>
+            <Card className="p-5 gap-0">
+              <div className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground mb-3">
+                <Plane className="size-5" />
+              </div>
+              <h4 className="font-semibold">Airport pickup & guest stay</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Vadodara/Ahmedabad airport pickup, hotel block bookings, and
+                guest transport bundled into your package.
+              </p>
+            </Card>
+            <Card className="p-5 gap-0">
+              <div className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground mb-3">
+                <Sparkles className="size-5" />
+              </div>
+              <h4 className="font-semibold">End-to-end decor & catering</h4>
+              <p className="text-sm text-muted-foreground mt-1">
+                Pre-approved decor themes and multi-cuisine caterers
+                (veg/Jain/Jain-veg + international menus) — book sight-unseen
+                with confidence.
+              </p>
+            </Card>
+
+            {/* Dedicated NRI contact card */}
+            <Card className="sm:col-span-2 wedding-gradient-soft border-primary/20">
+              <CardContent className="p-5">
+                <h4 className="font-semibold mb-1">Talk to our NRI concierge</h4>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Available 9 AM – 11 PM IST · responds within 2 hours
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <a
+                    href="https://wa.me/919016180583?text=Hi%20Mandapam%20NRI%20desk!%20I%27m%20based%20abroad%20and%20planning%20a%20wedding%20in%20Vadodara.%20Please%20share%20details."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2.5 p-3 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 transition"
+                  >
+                    <MessageCircle className="size-5 text-[#25D366] shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold">WhatsApp NRI desk</div>
+                      <div className="text-xs text-muted-foreground">
+                        +91 90161 80583
+                      </div>
+                    </div>
+                  </a>
+                  <a
+                    href="tel:+919016180583"
+                    className="flex items-center gap-2.5 p-3 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 transition"
+                  >
+                    <PhoneCall className="size-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold">Call (24×7)</div>
+                      <div className="text-xs text-muted-foreground">
+                        +91 90161 80583
+                      </div>
+                    </div>
+                  </a>
+                </div>
+                <Button
+                  asChild
+                  className="w-full mt-3 wedding-gradient text-primary-foreground"
+                >
+                  <a href="mailto:nri@mandapam.in?subject=NRI wedding booking enquiry">
+                    Email: nri@mandapam.in
+                  </a>
+                </Button>
+              </CardContent>
+            </Card>
           </div>
         </div>
       </section>

@@ -2,7 +2,7 @@
 
 import { Heart, Instagram, Facebook, Twitter, Mail, Phone } from "lucide-react";
 import { useAppStore } from "@/lib/store";
-import { CITIES } from "@/lib/seed-data";
+import { CITIES, COMING_SOON_CITIES } from "@/lib/seed-data";
 
 export function SiteFooter() {
   const setRole = useAppStore((s) => s.setRole);
@@ -52,12 +52,12 @@ export function SiteFooter() {
         </div>
 
         <div>
-          <h4 className="font-semibold text-sm mb-3">Top Cities</h4>
+          <h4 className="font-semibold text-sm mb-3">Cities we serve</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            {CITIES.slice(0, 6).map((c) => (
+            {CITIES.map((c) => (
               <li key={c}>
                 <button
-                  className="hover:text-primary text-left"
+                  className="hover:text-primary text-left font-medium text-foreground"
                   onClick={() => {
                     setRole("customer");
                     setFilter("city", c);
@@ -66,6 +66,14 @@ export function SiteFooter() {
                 >
                   Wedding venues in {c}
                 </button>
+              </li>
+            ))}
+            {COMING_SOON_CITIES.slice(0, 5).map((c) => (
+              <li key={c} className="text-left flex items-center gap-1.5 opacity-60">
+                {c}
+                <span className="text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1.5 py-0.5">
+                  Soon
+                </span>
               </li>
             ))}
           </ul>

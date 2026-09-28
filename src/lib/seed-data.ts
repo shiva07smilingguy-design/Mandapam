@@ -1115,17 +1115,25 @@ export const SEED_DISPUTES: Dispute[] = [
   },
 ];
 
-export const CITIES = [
-  "Vadodara",
+// Currently the platform is live only in Vadodara.
+// Other cities are listed as "Coming Soon" so visitors know we're expanding.
+export const CITIES = ["Vadodara"];
+
+export const COMING_SOON_CITIES = [
   "Ahmedabad",
-  "Bengaluru",
-  "Goa",
-  "Jaipur",
+  "Surat",
   "Mumbai",
   "Pune",
-  "Surat",
+  "Bengaluru",
+  "Jaipur",
   "Udaipur",
+  "Goa",
 ];
+
+// Backwards-compat: full list (active + coming soon) for components that
+// still iterate over all cities. Prefer using CITIES + COMING_SOON_CITIES
+// separately for new code.
+export const ALL_CITIES = [...CITIES, ...COMING_SOON_CITIES];
 
 export const EVENT_TYPES = [
   "Wedding",

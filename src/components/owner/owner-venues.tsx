@@ -36,7 +36,7 @@ import {
   Star,
 } from "lucide-react";
 import { useAppStore, formatINR, genVenueId } from "@/lib/store";
-import { CITIES, VENUE_TYPES, ALL_AMENITIES } from "@/lib/seed-data";
+import { CITIES, COMING_SOON_CITIES, VENUE_TYPES, ALL_AMENITIES } from "@/lib/seed-data";
 import { amenityIcon } from "@/lib/amenity-icons";
 import type { Venue } from "@/lib/types";
 import { toast } from "sonner";
@@ -415,6 +415,11 @@ export function OwnerVenues() {
                     {CITIES.map((c) => (
                       <SelectItem key={c} value={c}>
                         {c}
+                      </SelectItem>
+                    ))}
+                    {COMING_SOON_CITIES.map((c) => (
+                      <SelectItem key={c} value={`__soon_${c}`} disabled>
+                        {c} · Coming soon
                       </SelectItem>
                     ))}
                   </SelectContent>
