@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
+import { FloatingContactButtons } from "@/components/floating-contact";
 import { CustomerHome } from "@/components/customer/customer-home";
 import { CustomerBrowse } from "@/components/customer/customer-browse";
 import { CustomerVenueDetail } from "@/components/customer/customer-venue-detail";
@@ -84,6 +85,7 @@ export default function Home() {
         )}
       </main>
       <SiteFooter />
+      <FloatingContactButtons />
     </div>
   );
 }

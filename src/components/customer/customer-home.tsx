@@ -76,16 +76,17 @@ export function CustomerHome() {
             className="text-center max-w-3xl mx-auto"
           >
             <Badge className="bg-accent text-accent-foreground mb-4 border-0">
-              <Sparkles className="size-3 mr-1" /> 2,400+ verified venues across
-              India
+              <Sparkles className="size-3 mr-1" /> Vadodara&apos;s #1 wedding venue
+              marketplace
             </Badge>
             <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
-              Find the perfect venue for your{" "}
-              <span className="gold-text">forever</span> moment
+              Find the perfect venue in{" "}
+              <span className="gold-text">Vadodara</span> for your forever moment
             </h1>
             <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-              From marriage plots to palace resorts — compare live availability,
-              packages, prices and amenities, then book online in minutes.
+              From Akota banquet halls to Laxmi Vilas Palace venues — compare live
+              availability, packages, prices and amenities, then book online in
+              minutes.
             </p>
           </motion.div>
 

@@ -7,6 +7,7 @@ import { CITIES } from "@/lib/seed-data";
 export function SiteFooter() {
   const setRole = useAppStore((s) => s.setRole);
   const setCustomerView = useAppStore((s) => s.setCustomerView);
+  const setFilter = useAppStore((s) => s.setFilter);
 
   return (
     <footer className="mt-auto border-t bg-secondary/30">
@@ -21,9 +22,9 @@ export function SiteFooter() {
             </div>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            India&apos;s wedding venue marketplace. Discover, compare and book
+            Vadodara&apos;s wedding venue marketplace. Discover, compare and book
             marriage plots, banquet halls, party plots, lawns, resorts and
-            wedding venues — all in one place.
+            wedding venues across Vadodara and beyond — all in one place.
           </p>
           <div className="flex gap-2 mt-4">
             <a
@@ -59,6 +60,7 @@ export function SiteFooter() {
                   className="hover:text-primary text-left"
                   onClick={() => {
                     setRole("customer");
+                    setFilter("city", c);
                     setCustomerView("browse");
                   }}
                 >

@@ -144,7 +144,7 @@ interface AppState {
 }
 
 const DEFAULT_FILTERS: SearchFilters = {
-  city: "",
+  city: "Vadodara",
   eventType: "",
   date: "",
   guests: 200,
