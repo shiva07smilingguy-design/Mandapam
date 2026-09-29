@@ -1,0 +1,34 @@
+<svg width="200" height="200" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Concept 4 — Kalash + Mandap silhouette">
+  <defs>
+    <linearGradient id="m4maroon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B1E3F" />
+      <stop offset="100%" stop-color="#6B0F2A" />
+    </linearGradient>
+    <linearGradient id="m4gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D03F" />
+      <stop offset="100%" stop-color="#D4A574" />
+    </linearGradient>
+  </defs>
+  <!-- Maroon circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#m4maroon)" />
+
+  <!-- Mandap arch (outer arch) -->
+  <path d="M 14 50 L 14 28 Q 14 12 32 12 Q 50 12 50 28 L 50 50"
+        stroke="url(#m4gold)" stroke-width="2" fill="none" stroke-linecap="round" />
+
+  <!-- Kalash pot (rounded base) -->
+  <ellipse cx="32" cy="40" rx="9" ry="7" fill="url(#m4gold)" />
+  <!-- Kalash neck -->
+  <rect x="28" y="29" width="8" height="6" fill="url(#m4gold)" />
+  <!-- Kalash rim -->
+  <ellipse cx="32" cy="28" rx="6" ry="1.5" fill="url(#m4gold)" />
+
+  <!-- Coconut on top -->
+  <circle cx="32" cy="22" r="3.5" fill="url(#m4gold)" />
+  <!-- Leaves -->
+  <path d="M 28 22 Q 25 18 27 14" stroke="url(#m4gold)" stroke-width="1.5" fill="none" stroke-linecap="round" />
+  <path d="M 36 22 Q 39 18 37 14" stroke="url(#m4gold)" stroke-width="1.5" fill="none" stroke-linecap="round" />
+
+  <!-- Decorative base -->
+  <rect x="12" y="50" width="40" height="2" rx="0.5" fill="url(#m4gold)" />
+</svg>

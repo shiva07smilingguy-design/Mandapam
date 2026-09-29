@@ -1,0 +1,21 @@
+<svg width="200" height="200" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Concept 2 — M Monogram in Mandap Arch">
+  <defs>
+    <linearGradient id="m2maroon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B1E3F" />
+      <stop offset="100%" stop-color="#6B0F2A" />
+    </linearGradient>
+    <linearGradient id="m2gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#F4D03F" />
+      <stop offset="100%" stop-color="#D4A574" />
+    </linearGradient>
+  </defs>
+  <!-- Maroon circle -->
+  <circle cx="32" cy="32" r="30" fill="url(#m2maroon)" />
+  <!-- Gold mandap arch (M shape) -->
+  <path d="M 16 48 L 16 28 Q 16 14 24 14 Q 30 14 32 22 Q 34 14 40 14 Q 48 14 48 28 L 48 48"
+        stroke="url(#m2gold)" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+  <!-- Small finial on top of arch -->
+  <circle cx="32" cy="8" r="1.5" fill="url(#m2gold)" />
+  <!-- Base line -->
+  <line x1="14" y1="50" x2="50" y2="50" stroke="url(#m2gold)" stroke-width="1.5" stroke-linecap="round" opacity="0.7" />
+</svg>

@@ -1,0 +1,29 @@
+<svg width="200" height="200" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Concept 3 — Two intertwined hearts">
+  <defs>
+    <linearGradient id="m3maroon" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#8B1E3F" />
+      <stop offset="100%" stop-color="#6B0F2A" />
+    </linearGradient>
+    <linearGradient id="m3gold" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#F4D03F" />
+      <stop offset="100%" stop-color="#D4A574" />
+    </linearGradient>
+  </defs>
+  <!-- Maroon circle background -->
+  <circle cx="32" cy="32" r="30" fill="url(#m3maroon)" />
+
+  <!-- Left heart (gold, slightly tilted left) -->
+  <g transform="rotate(-12 28 32)">
+    <path d="M 28 42 C 22 36, 16 32, 16 26 C 16 22, 19 19, 23 19 C 26 19, 28 21, 28 24 C 28 21, 30 19, 33 19 C 37 19, 40 22, 40 26 C 40 32, 34 36, 28 42 Z"
+          fill="url(#m3gold)" opacity="0.95" />
+  </g>
+
+  <!-- Right heart (white, slightly tilted right) -->
+  <g transform="rotate(12 36 32)">
+    <path d="M 36 42 C 30 36, 24 32, 24 26 C 24 22, 27 19, 31 19 C 34 19, 36 21, 36 24 C 36 21, 38 19, 41 19 C 45 19, 48 22, 48 26 C 48 32, 42 36, 36 42 Z"
+          fill="#FFFFFF" opacity="0.92" />
+  </g>
+
+  <!-- Small M in the middle negative space -->
+  <text x="32" y="34" font-family="Georgia, serif" font-size="6" font-weight="700" fill="#8B1E3F" text-anchor="middle" dominant-baseline="middle">M</text>
+</svg>
