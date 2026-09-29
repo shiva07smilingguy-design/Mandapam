@@ -414,17 +414,34 @@ export function CustomerBrowse() {
           {filtered.length === 0 ? (
             <Card className="p-12 text-center">
               <Frown className="size-10 mx-auto text-muted-foreground mb-2" />
-              <h3 className="font-semibold">No venues match your filters</h3>
-              <p className="text-sm text-muted-foreground mt-1">
-                Try widening your budget, date, or amenity selection.
+              <h3 className="font-semibold">
+                {filters.venueType && filters.city
+                  ? `No ${filters.venueType} venues in ${filters.city} yet`
+                  : filters.venueType
+                  ? `No ${filters.venueType} venues match your filters`
+                  : "No venues match your filters"}
+              </h3>
+              <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                {filters.venueType && filters.city
+                  ? `We're currently live in ${filters.city} with banquet halls, party plots and wedding venues. ${filters.venueType} venues are coming soon — try another type or check back shortly.`
+                  : "Try widening your budget, date, or amenity selection."}
               </p>
-              <Button
-                variant="outline"
-                className="mt-4"
-                onClick={resetFilters}
-              >
-                Reset filters
-              </Button>
+              <div className="flex flex-wrap gap-2 justify-center mt-4">
+                {filters.venueType && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setFilter("venueType", "")}
+                  >
+                    Show all venue types
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={resetFilters}
+                >
+                  Reset all filters
+                </Button>
+              </div>
             </Card>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">

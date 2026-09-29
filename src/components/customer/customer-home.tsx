@@ -277,22 +277,54 @@ export function CustomerHome() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {VENUE_TYPES.map((type) => {
             const Icon = TYPE_ICONS[type] ?? Building2;
+            // Count venues of this type in active cities only (Vadodara for now)
+            const activeCityCount = venues.filter(
+              (v) =>
+                v.type === type &&
+                v.status === "approved" &&
+                CITIES.includes(v.city)
+            ).length;
+            const isAvailable = activeCityCount > 0;
             return (
               <button
                 key={type}
+                disabled={!isAvailable}
                 onClick={() => {
+                  if (!isAvailable) return;
                   setFilter("venueType", type);
                   setCustomerView("browse");
                 }}
-                className="group rounded-xl border bg-card hover:border-primary hover:shadow-md transition-all p-4 text-center"
+                className={`group relative rounded-xl border bg-card transition-all p-4 text-center ${
+                  isAvailable
+                    ? "hover:border-primary hover:shadow-md cursor-pointer"
+                    : "opacity-60 cursor-not-allowed border-dashed"
+                }`}
+                title={
+                  isAvailable
+                    ? `Browse ${type} venues in Vadodara`
+                    : `${type} venues coming soon to Vadodara`
+                }
               >
-                <div className="mx-auto mb-2 grid size-12 place-items-center rounded-full bg-accent text-accent-foreground group-hover:scale-105 transition-transform">
+                <div
+                  className={`mx-auto mb-2 grid size-12 place-items-center rounded-full transition-transform ${
+                    isAvailable
+                      ? "bg-accent text-accent-foreground group-hover:scale-105"
+                      : "bg-muted text-muted-foreground"
+                  }`}
+                >
                   <Icon className="size-5" />
                 </div>
                 <div className="text-sm font-medium">{type}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {venues.filter((v) => v.type === type && v.status === "approved").length}{" "}
-                  venues
+                  {isAvailable ? (
+                    <>
+                      {activeCityCount} venue{activeCityCount !== 1 ? "s" : ""}
+                    </>
+                  ) : (
+                    <span className="inline-block text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1.5 py-0.5">
+                      Soon
+                    </span>
+                  )}
                 </div>
               </button>
             );
