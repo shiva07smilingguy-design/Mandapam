@@ -423,10 +423,18 @@ export function CustomerBrowse() {
               </h3>
               <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
                 {filters.venueType && filters.city
-                  ? `We're currently live in ${filters.city} with banquet halls, party plots and wedding venues. ${filters.venueType} venues are coming soon — try another type or check back shortly.`
+                  ? `We don't have ${filters.venueType} venues in ${filters.city} yet, but they may be available in other cities that are coming soon. Try clearing the city filter or pick another venue type.`
                   : "Try widening your budget, date, or amenity selection."}
               </p>
               <div className="flex flex-wrap gap-2 justify-center mt-4">
+                {filters.venueType && filters.city && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setFilter("city", "")}
+                  >
+                    Clear city filter
+                  </Button>
+                )}
                 {filters.venueType && (
                   <Button
                     variant="outline"

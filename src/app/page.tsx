@@ -47,6 +47,15 @@ export default function Home() {
     if (!currentUser) loginAs(role);
   }, [role, currentUser, loginAs]);
 
+  // Scroll to top whenever the active view changes — prevents the bug where
+  // clicking a category on the homepage (when scrolled down) opened the Browse
+  // page already scrolled to the footer.
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+    }
+  }, [role, customerView, ownerView, adminView]);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <SiteHeader />

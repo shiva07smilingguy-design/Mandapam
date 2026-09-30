@@ -277,51 +277,47 @@ export function CustomerHome() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           {VENUE_TYPES.map((type) => {
             const Icon = TYPE_ICONS[type] ?? Building2;
-            // Count venues of this type in active cities only (Vadodara for now)
-            const activeCityCount = venues.filter(
+            // Count venues of this type across all cities (so users can browse
+            // even if Vadodara doesn't have any of this type yet — the helpful
+            // empty state on the Browse page will guide them).
+            const totalCount = venues.filter(
+              (v) => v.type === type && v.status === "approved"
+            ).length;
+            const vadodaraCount = venues.filter(
               (v) =>
                 v.type === type &&
                 v.status === "approved" &&
-                CITIES.includes(v.city)
+                v.city === "Vadodara"
             ).length;
-            const isAvailable = activeCityCount > 0;
+            const isAvailable = totalCount > 0;
             return (
               <button
                 key={type}
-                disabled={!isAvailable}
                 onClick={() => {
-                  if (!isAvailable) return;
                   setFilter("venueType", type);
                   setCustomerView("browse");
                 }}
-                className={`group relative rounded-xl border bg-card transition-all p-4 text-center ${
-                  isAvailable
-                    ? "hover:border-primary hover:shadow-md cursor-pointer"
-                    : "opacity-60 cursor-not-allowed border-dashed"
-                }`}
-                title={
-                  isAvailable
-                    ? `Browse ${type} venues in Vadodara`
-                    : `${type} venues coming soon to Vadodara`
-                }
+                className="group rounded-xl border bg-card hover:border-primary hover:shadow-md transition-all p-4 text-center cursor-pointer"
+                title={`Browse ${type} venues`}
               >
-                <div
-                  className={`mx-auto mb-2 grid size-12 place-items-center rounded-full transition-transform ${
-                    isAvailable
-                      ? "bg-accent text-accent-foreground group-hover:scale-105"
-                      : "bg-muted text-muted-foreground"
-                  }`}
-                >
+                <div className="mx-auto mb-2 grid size-12 place-items-center rounded-full bg-accent text-accent-foreground group-hover:scale-105 transition-transform">
                   <Icon className="size-5" />
                 </div>
                 <div className="text-sm font-medium">{type}</div>
                 <div className="text-[11px] text-muted-foreground mt-0.5">
-                  {isAvailable ? (
+                  {vadodaraCount > 0 ? (
                     <>
-                      {activeCityCount} venue{activeCityCount !== 1 ? "s" : ""}
+                      {vadodaraCount} venue{vadodaraCount !== 1 ? "s" : ""} in Vadodara
+                    </>
+                  ) : isAvailable ? (
+                    <>
+                      {totalCount} venue{totalCount !== 1 ? "s" : ""} ·{" "}
+                      <span className="text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1 py-0.5">
+                        Other cities
+                      </span>
                     </>
                   ) : (
-                    <span className="inline-block text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1.5 py-0.5">
+                    <span className="text-[10px] uppercase tracking-wide bg-secondary text-muted-foreground rounded px-1.5 py-0.5">
                       Soon
                     </span>
                   )}
