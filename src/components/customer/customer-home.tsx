@@ -33,8 +33,8 @@ import {
   Globe2,
   Video,
   Languages,
-  MessageCircle,
   Clock4,
+  Mail,
 } from "lucide-react";
 import { useAppStore, formatINR } from "@/lib/store";
 import {
@@ -502,7 +502,7 @@ export function CustomerHome() {
               </div>
               <h4 className="font-semibold">Video venue tours</h4>
               <p className="text-sm text-muted-foreground mt-1">
-                Live WhatsApp video tours of any 3 shortlisted venues — no need
+                Live video tours of any 3 shortlisted venues — no need
                 to fly down just to see options.
               </p>
             </Card>
@@ -547,20 +547,6 @@ export function CustomerHome() {
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <a
-                    href="https://wa.me/919016180583?text=Hi%20Mandapam%20NRI%20desk!%20I%27m%20based%20abroad%20and%20planning%20a%20wedding%20in%20Vadodara.%20Please%20share%20details."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2.5 p-3 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 border border-[#25D366]/30 transition"
-                  >
-                    <MessageCircle className="size-5 text-[#25D366] shrink-0" />
-                    <div className="min-w-0">
-                      <div className="text-sm font-semibold">WhatsApp NRI desk</div>
-                      <div className="text-xs text-muted-foreground">
-                        +91 90161 80583
-                      </div>
-                    </div>
-                  </a>
-                  <a
                     href="tel:+919016180583"
                     className="flex items-center gap-2.5 p-3 rounded-lg bg-primary/10 hover:bg-primary/20 border border-primary/30 transition"
                   >
@@ -569,6 +555,18 @@ export function CustomerHome() {
                       <div className="text-sm font-semibold">Call (24×7)</div>
                       <div className="text-xs text-muted-foreground">
                         +91 90161 80583
+                      </div>
+                    </div>
+                  </a>
+                  <a
+                    href="mailto:nri@mandapam.in?subject=NRI wedding booking enquiry"
+                    className="flex items-center gap-2.5 p-3 rounded-lg bg-accent/40 hover:bg-accent/60 border border-accent transition"
+                  >
+                    <Mail className="size-5 text-primary shrink-0" />
+                    <div className="min-w-0">
+                      <div className="text-sm font-semibold">Email NRI desk</div>
+                      <div className="text-xs text-muted-foreground">
+                        nri@mandapam.in
                       </div>
                     </div>
                   </a>

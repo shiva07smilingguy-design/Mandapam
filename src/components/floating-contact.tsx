@@ -1,23 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Phone, MessageCircle, X } from "lucide-react";
+import { Phone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const PHONE_NUMBER = "+919016180583";
 const PHONE_DISPLAY = "+91 90161 80583";
-const WHATSAPP_NUMBER = "919016180583"; // wa.me requires no + or spaces
-const WHATSAPP_MESSAGE =
-  "Hi Mandapam team! I'd like to know more about wedding venue bookings in Vadodara.";
 
 /**
- * FloatingContactButtons — sticky Call Now + WhatsApp FAB.
+ * FloatingContactButtons — sticky Call Now FAB.
  *
  * - Visible on every page (mounted in root layout)
- * - Mobile-first: bottom-right floating stack
+ * - Mobile-first: bottom-right floating button
  * - Desktop: also bottom-right, slightly larger hit area
  * - Auto-expands on first visit (3 seconds) to draw attention, then collapses
- * - Hover/tap reveals labels on desktop
+ * - Hover/tap reveals label on desktop
  */
 export function FloatingContactButtons() {
   const [expanded, setExpanded] = useState(false);
@@ -34,35 +31,6 @@ export function FloatingContactButtons() {
       className="fixed z-50 bottom-4 right-4 sm:bottom-6 sm:right-6 flex flex-col items-end gap-2"
       aria-label="Quick contact"
     >
-      {/* WhatsApp button */}
-      <a
-        href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(
-          WHATSAPP_MESSAGE
-        )}`}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={cn(
-          "group flex items-center gap-2 rounded-full shadow-lg transition-all",
-          "bg-[#25D366] text-white hover:bg-[#1ebe5b]",
-          "size-12 sm:size-14 hover:pr-4 hover:w-auto",
-          expanded && "pr-4 w-auto"
-        )}
-        aria-label="Chat with us on WhatsApp"
-        title="Chat on WhatsApp"
-      >
-        <MessageCircle className="size-5 sm:size-6 shrink-0 mx-auto group-hover:mx-0" />
-        <span
-          className={cn(
-            "text-sm font-medium whitespace-nowrap overflow-hidden transition-all",
-            "max-w-0 group-hover:max-w-[140px]",
-            expanded && "max-w-[140px]"
-          )
-          }
-        >
-          WhatsApp us
-        </span>
-      </a>
-
       {/* Call Now button */}
       <a
         href={`tel:${PHONE_NUMBER}`}

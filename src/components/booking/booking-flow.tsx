@@ -245,7 +245,7 @@ function BookingFlowContent({
               />
             </div>
             <div className="space-y-1.5">
-              <Label className="text-xs">Phone (WhatsApp)</Label>
+              <Label className="text-xs">Phone</Label>
               <Input
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
@@ -528,7 +528,7 @@ function BookingFlowContent({
             Your booking is confirmed!
           </h3>
           <p className="text-sm text-muted-foreground mt-1">
-            We&apos;ve sent a confirmation on WhatsApp & email.
+            We&apos;ve sent a confirmation on SMS & email.
           </p>
           <Card className="w-full mt-4 text-left">
             <CardContent className="p-4 space-y-1.5 text-sm">
