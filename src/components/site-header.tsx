@@ -72,7 +72,7 @@ export function SiteHeader() {
       ? [
           { id: "home", label: "Home", icon: Home },
           { id: "browse", label: "Browse Venues", icon: Search },
-          { id: "my-bookings", label: "My Bookings", icon: CalendarHeart },
+          { id: "my-inquiries", label: "My Inquiries", icon: CalendarHeart },
           {
             id: "compare",
             label: `Compare (${compareIds.length})`,
@@ -82,16 +82,17 @@ export function SiteHeader() {
       : role === "owner"
       ? [
           { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+          { id: "inquiries", label: "Inquiries", icon: ListFilter },
           { id: "venues", label: "My Venues", icon: Building2 },
           { id: "calendar", label: "Calendar", icon: CalendarHeart },
-          { id: "bookings", label: "Bookings", icon: ListFilter },
           { id: "packages", label: "Packages", icon: Crown },
           { id: "earnings", label: "Earnings", icon: Heart },
         ]
       : [
           { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
           { id: "approvals", label: "Approvals", icon: ShieldCheck },
-          { id: "bookings", label: "Bookings", icon: ListFilter },
+          { id: "inquiries", label: "Inquiries", icon: ListFilter },
+          { id: "bookings", label: "Bookings", icon: CalendarHeart },
           { id: "commission", label: "Commission", icon: Crown },
           { id: "disputes", label: "Disputes", icon: Heart },
           { id: "reports", label: "Reports", icon: Home },

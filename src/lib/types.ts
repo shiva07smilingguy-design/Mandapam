@@ -134,3 +134,100 @@ export interface Dispute {
   status: "open" | "investigating" | "resolved";
   raisedAt: string;
 }
+
+// ----- Inquiry (lead-routing + escrow flow) -----
+//
+// Lifecycle (7 steps):
+// 1. pending_owner       — customer submitted inquiry, Mandapam notifies owner
+// 2. quoted              — owner responded with quote + services, Mandapam notifies customer
+// 3. accepted_by_customer — customer accepted the quote, Mandapam notifies owner
+//    (or declined_by_customer / declined_by_owner — inquiry closed)
+// 4. date_locked         — owner locks the date, Mandapam sends payment link to customer
+// 5. paid                — customer paid 20% advance + uploaded screenshot, money in owner wallet (escrow)
+// 6. receipt_uploaded    — owner uploaded cash receipt PDF after event, goes to redeem request queue
+// 7. released            — wallet balance released to owner minus commission (auto after event date)
+
+export type InquiryStatus =
+  | "pending_owner"
+  | "quoted"
+  | "accepted_by_customer"
+  | "declined_by_owner"
+  | "declined_by_customer"
+  | "date_locked"
+  | "paid"
+  | "receipt_uploaded"
+  | "released";
+
+export interface OwnerQuote {
+  amount: number; // total quote (incl. all services)
+  services: string[]; // included services
+  message: string; // personalized note from owner
+  validUntil: string; // ISO date
+}
+
+export interface TimelineEvent {
+  step: number;
+  label: string;
+  actor: "customer" | "owner" | "mandapam" | "system";
+  at: string; // ISO timestamp
+  note?: string;
+}
+
+export interface Inquiry {
+  id: string;
+  venueId: string;
+  venueName: string;
+  venueCity: string;
+  venueType: VenueType;
+  ownerId: string;
+  ownerName: string;
+  customerId: string;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string;
+  eventDate: string;
+  eventType: EventType;
+  guestCount: number;
+  customerMessage: string;
+  status: InquiryStatus;
+
+  // Step 2: owner's quote
+  quote?: OwnerQuote;
+
+  // Step 5: customer payment
+  paymentRef?: string;
+  paymentScreenshotRef?: string; // mock: a text ref like "UTR123456789"
+  advancePaid?: number;
+  paidAt?: string;
+
+  // Step 6: owner's cash receipt
+  cashReceiptRef?: string; // mock: a text ref like "RECEIPT-2026-001"
+  cashReceiptAmount?: number;
+  receiptUploadedAt?: string;
+
+  // Step 7: wallet release
+  commissionDeducted?: number;
+  releasedAmount?: number;
+  releasedAt?: string;
+
+  timeline: TimelineEvent[];
+  createdAt: string;
+}
+
+// Owner wallet entry — derived from inquiries, but stored as ledger
+export interface WalletEntry {
+  id: string;
+  inquiryId: string;
+  venueName: string;
+  customerName: string;
+  eventDate: string;
+  advancePaid: number;
+  commissionRate: number; // percentage applied
+  commissionAmount: number;
+  netPayable: number;
+  status: "in_escrow" | "redeem_requested" | "released";
+  cashReceiptRef?: string;
+  receiptUploadedAt?: string;
+  releasedAt?: string;
+  createdAt: string;
+}

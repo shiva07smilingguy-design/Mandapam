@@ -52,6 +52,7 @@ import {
   COMMISSION_SLABS,
   COMMISSION_FLOOR_PERCENT,
 } from "@/lib/commission";
+import { OwnerWalletCard } from "@/components/inquiry/owner-wallet-and-admin";
 import type { BookingStatus, VenuePackage } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -1152,6 +1153,9 @@ export function OwnerEarnings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Inquiry-based wallet (escrow) */}
+      <OwnerWalletCard />
     </div>
   );
 }

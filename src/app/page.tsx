@@ -9,16 +9,17 @@ import { CustomerBrowse } from "@/components/customer/customer-browse";
 import { CustomerVenueDetail } from "@/components/customer/customer-venue-detail";
 import { CustomerMyBookings } from "@/components/customer/customer-my-bookings";
 import { CustomerCompare } from "@/components/customer/customer-compare";
+import { CustomerMyInquiries } from "@/components/inquiry/customer-my-inquiries";
 import { OwnerDashboard } from "@/components/owner/owner-dashboard";
-import {
-  OwnerVenues,
-} from "@/components/owner/owner-venues";
+import { OwnerVenues } from "@/components/owner/owner-venues";
 import {
   OwnerBookings,
   OwnerCalendar,
   OwnerPackages,
   OwnerEarnings,
 } from "@/components/owner/owner-panels";
+import { OwnerInquiries } from "@/components/inquiry/owner-inquiries";
+import { AdminInquiries } from "@/components/inquiry/owner-wallet-and-admin";
 import {
   AdminDashboard,
   AdminApprovals,
@@ -47,9 +48,7 @@ export default function Home() {
     if (!currentUser) loginAs(role);
   }, [role, currentUser, loginAs]);
 
-  // Scroll to top whenever the active view changes — prevents the bug where
-  // clicking a category on the homepage (when scrolled down) opened the Browse
-  // page already scrolled to the footer.
+  // Scroll to top whenever the active view changes
   useEffect(() => {
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, left: 0, behavior: "auto" });
@@ -66,6 +65,7 @@ export default function Home() {
             {customerView === "browse" && <CustomerBrowse />}
             {customerView === "venue-detail" && <CustomerVenueDetail />}
             {customerView === "my-bookings" && <CustomerMyBookings />}
+            {customerView === "my-inquiries" && <CustomerMyInquiries />}
             {customerView === "compare" && <CustomerCompare />}
           </>
         )}
@@ -75,6 +75,7 @@ export default function Home() {
             {ownerView === "venues" && <OwnerVenues />}
             {ownerView === "calendar" && <OwnerCalendar />}
             {ownerView === "bookings" && <OwnerBookings />}
+            {ownerView === "inquiries" && <OwnerInquiries />}
             {ownerView === "packages" && <OwnerPackages />}
             {ownerView === "earnings" && <OwnerEarnings />}
           </>
@@ -83,6 +84,7 @@ export default function Home() {
           <>
             {adminView === "dashboard" && <AdminDashboard />}
             {adminView === "approvals" && <AdminApprovals />}
+            {adminView === "inquiries" && <AdminInquiries />}
             {adminView === "bookings" && <AdminBookings />}
             {adminView === "commission" && <AdminCommission />}
             {adminView === "disputes" && <AdminDisputes />}

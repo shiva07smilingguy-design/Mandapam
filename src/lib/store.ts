@@ -9,6 +9,9 @@ import type {
   Coupon,
   Dispute,
   EventType,
+  Inquiry,
+  InquiryStatus,
+  OwnerQuote,
   Role,
   Venue,
   VenuePackage,
@@ -17,9 +20,21 @@ import {
   SEED_BOOKINGS,
   SEED_COUPONS,
   SEED_DISPUTES,
+  SEED_INQUIRIES,
   SEED_USERS,
   SEED_VENUES,
 } from "./seed-data";
+import {
+  notifyOwner_newInquiry,
+  notifyCustomer_ownerQuote,
+  notifyOwner_customerAccepted,
+  notifyCustomer_paymentLink,
+  notifyOwner_paymentReceived,
+  notifyOwner_receiptSubmitted,
+  notifyOwner_walletReleased,
+  notifyCustomer_ownerDeclined,
+} from "./notifications";
+import { computeCommission } from "./commission";
 
 // ----- App navigation state -----
 
@@ -28,6 +43,7 @@ export type CustomerView =
   | "browse"
   | "venue-detail"
   | "my-bookings"
+  | "my-inquiries"
   | "compare";
 
 export type OwnerView =
@@ -35,6 +51,7 @@ export type OwnerView =
   | "venues"
   | "calendar"
   | "bookings"
+  | "inquiries"
   | "packages"
   | "earnings";
 
@@ -42,6 +59,7 @@ export type AdminView =
   | "dashboard"
   | "approvals"
   | "bookings"
+  | "inquiries"
   | "commission"
   | "customers"
   | "coupons"
@@ -90,6 +108,7 @@ interface AppState {
   bookings: Booking[];
   coupons: Coupon[];
   disputes: Dispute[];
+  inquiries: Inquiry[];
 
   // Customer flow state
   selectedVenueId: string | null;
@@ -141,6 +160,55 @@ interface AppState {
   addCoupon: (c: Coupon) => void;
   toggleCoupon: (id: string) => void;
   deleteCoupon: (id: string) => void;
+
+  // ----- Inquiry lifecycle (7-step escrow flow) -----
+
+  // Step 1: Customer submits inquiry → Mandapam notifies owner
+  submitInquiry: (input: {
+    venueId: string;
+    eventDate: string;
+    eventType: EventType;
+    guestCount: number;
+    customerMessage: string;
+    customerName: string;
+    customerPhone: string;
+    customerEmail: string;
+  }) => Inquiry;
+
+  // Step 2: Owner sends quote → Mandapam notifies customer
+  ownerSendQuote: (
+    inquiryId: string,
+    quote: Omit<OwnerQuote, "validUntil"> & { validUntil: string }
+  ) => void;
+
+  // Step 2 alt: Owner declines
+  ownerDeclineInquiry: (inquiryId: string) => void;
+
+  // Step 3: Customer accepts → Mandapam notifies owner
+  customerAcceptQuote: (inquiryId: string) => void;
+
+  // Step 3 alt: Customer declines
+  customerDeclineQuote: (inquiryId: string) => void;
+
+  // Step 4: Owner locks date → Mandapam sends payment link to customer
+  ownerLockDate: (inquiryId: string) => void;
+
+  // Step 5: Customer pays + uploads screenshot → Mandapam credits owner wallet
+  customerPayAdvance: (
+    inquiryId: string,
+    paymentRef: string,
+    screenshotRef: string
+  ) => void;
+
+  // Step 6: Owner uploads cash receipt → goes to redeem request queue
+  ownerUploadReceipt: (
+    inquiryId: string,
+    receiptRef: string,
+    receiptAmount: number
+  ) => void;
+
+  // Step 7: Auto-release wallet after event date (admin or system trigger)
+  releaseWallet: (inquiryId: string) => void;
 }
 
 const DEFAULT_FILTERS: SearchFilters = {
@@ -199,6 +267,7 @@ export const useAppStore = create<AppState>()(
       bookings: SEED_BOOKINGS,
       coupons: SEED_COUPONS,
       disputes: SEED_DISPUTES,
+      inquiries: SEED_INQUIRIES,
 
       // Customer flow
       selectedVenueId: null,
@@ -337,6 +406,286 @@ export const useAppStore = create<AppState>()(
         })),
       deleteCoupon: (id) =>
         set((s) => ({ coupons: s.coupons.filter((c) => c.id !== id) })),
+
+      // ----- Inquiry lifecycle implementations -----
+
+      // Step 1: Customer submits inquiry
+      submitInquiry: (input) => {
+        const venue = get().venues.find((v) => v.id === input.venueId);
+        if (!venue) throw new Error("Venue not found");
+        const id = `inq-${String(get().inquiries.length + 1).padStart(3, "0")}`;
+        const now = new Date().toISOString();
+        const newInquiry: Inquiry = {
+          id,
+          venueId: venue.id,
+          venueName: venue.name,
+          venueCity: venue.city,
+          venueType: venue.type,
+          ownerId: venue.ownerId,
+          ownerName: venue.ownerName,
+          customerId: get().currentUser?.id ?? "u-cust-1",
+          customerName: input.customerName,
+          customerPhone: input.customerPhone,
+          customerEmail: input.customerEmail,
+          eventDate: input.eventDate,
+          eventType: input.eventType,
+          guestCount: input.guestCount,
+          customerMessage: input.customerMessage,
+          status: "pending_owner",
+          timeline: [
+            {
+              step: 1,
+              label: "Inquiry submitted by customer",
+              actor: "customer",
+              at: now,
+              note: "Mandapam notified owner via WhatsApp + dashboard",
+            },
+          ],
+          createdAt: now,
+        };
+        // Trigger mock WhatsApp notification to owner
+        notifyOwner_newInquiry(newInquiry);
+        set((s) => ({ inquiries: [newInquiry, ...s.inquiries] }));
+        return newInquiry;
+      },
+
+      // Step 2: Owner sends quote
+      ownerSendQuote: (inquiryId, quote) => {
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "quoted" as InquiryStatus,
+                  quote,
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 2,
+                      label: `Owner sent quote — ${formatINR(quote.amount)}`,
+                      actor: "owner" as const,
+                      at: new Date().toISOString(),
+                      note: "Mandapam notified customer via WhatsApp",
+                    },
+                  ],
+                }
+              : inq
+          ),
+        }));
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyCustomer_ownerQuote(updated);
+      },
+
+      // Step 2 alt: Owner declines
+      ownerDeclineInquiry: (inquiryId) => {
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "declined_by_owner" as InquiryStatus,
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 2,
+                      label: "Owner declined inquiry",
+                      actor: "owner" as const,
+                      at: new Date().toISOString(),
+                      note: "Mandapam notified customer via WhatsApp",
+                    },
+                  ],
+                }
+              : inq
+          ),
+        }));
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyCustomer_ownerDeclined(updated);
+      },
+
+      // Step 3: Customer accepts quote
+      customerAcceptQuote: (inquiryId) => {
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "accepted_by_customer" as InquiryStatus,
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 3,
+                      label: "Customer accepted quote",
+                      actor: "customer" as const,
+                      at: new Date().toISOString(),
+                      note: "Mandapam notified owner to lock date",
+                    },
+                  ],
+                }
+              : inq
+          ),
+        }));
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyOwner_customerAccepted(updated);
+      },
+
+      // Step 3 alt: Customer declines
+      customerDeclineQuote: (inquiryId) => {
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "declined_by_customer" as InquiryStatus,
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 3,
+                      label: "Customer declined quote",
+                      actor: "customer" as const,
+                      at: new Date().toISOString(),
+                    },
+                  ],
+                }
+              : inq
+          ),
+        }));
+      },
+
+      // Step 4: Owner locks date → send payment link
+      ownerLockDate: (inquiryId) => {
+        const inquiry = get().inquiries.find((i) => i.id === inquiryId);
+        if (!inquiry) return;
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "date_locked" as InquiryStatus,
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 4,
+                      label: "Owner locked date — payment link sent",
+                      actor: "owner" as const,
+                      at: new Date().toISOString(),
+                      note: "Mandapam sent WhatsApp with payment link to customer",
+                    },
+                  ],
+                }
+              : inq
+          ),
+          // Also lock the date in venue's blockedDates
+          venues: s.venues.map((v) =>
+            v.id === inquiry.venueId
+              ? { ...v, blockedDates: [...v.blockedDates, inquiry.eventDate] }
+              : v
+          ),
+        }));
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyCustomer_paymentLink(updated);
+      },
+
+      // Step 5: Customer pays advance + uploads screenshot
+      customerPayAdvance: (inquiryId, paymentRef, screenshotRef) => {
+        set((s) => {
+          const inquiry = s.inquiries.find((i) => i.id === inquiryId);
+          if (!inquiry || !inquiry.quote) return {};
+          const advancePaid = Math.round(inquiry.quote.amount * 0.2);
+          return {
+            inquiries: s.inquiries.map((inq) =>
+              inq.id === inquiryId
+                ? {
+                    ...inq,
+                    status: "paid" as InquiryStatus,
+                    paymentRef,
+                    paymentScreenshotRef: screenshotRef,
+                    advancePaid,
+                    paidAt: new Date().toISOString(),
+                    timeline: [
+                      ...inq.timeline,
+                      {
+                        step: 5,
+                        label: `Customer paid ${formatINR(advancePaid)} advance — ${screenshotRef}`,
+                        actor: "customer" as const,
+                        at: new Date().toISOString(),
+                        note: `${formatINR(advancePaid)} credited to owner wallet (in escrow)`,
+                      },
+                    ],
+                  }
+                : inq
+            ),
+          };
+        });
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyOwner_paymentReceived(updated);
+      },
+
+      // Step 6: Owner uploads cash receipt → goes to redeem request queue
+      ownerUploadReceipt: (inquiryId, receiptRef, receiptAmount) => {
+        set((s) => ({
+          inquiries: s.inquiries.map((inq) =>
+            inq.id === inquiryId
+              ? {
+                  ...inq,
+                  status: "receipt_uploaded" as InquiryStatus,
+                  cashReceiptRef: receiptRef,
+                  cashReceiptAmount: receiptAmount,
+                  receiptUploadedAt: new Date().toISOString(),
+                  timeline: [
+                    ...inq.timeline,
+                    {
+                      step: 6,
+                      label: `Owner uploaded cash receipt (${receiptRef}) — ${formatINR(receiptAmount)}`,
+                      actor: "owner" as const,
+                      at: new Date().toISOString(),
+                      note: "Added to redeem request queue",
+                    },
+                  ],
+                }
+              : inq
+          ),
+        }));
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyOwner_receiptSubmitted(updated);
+      },
+
+      // Step 7: Release wallet after event date
+      releaseWallet: (inquiryId) => {
+        set((s) => {
+          const inquiry = s.inquiries.find((i) => i.id === inquiryId);
+          if (!inquiry || !inquiry.advancePaid) return {};
+          // Use the tiered commission engine
+          const breakdown = computeCommission(
+            inquiry.venueType,
+            inquiry.advancePaid
+          );
+          return {
+            inquiries: s.inquiries.map((inq) =>
+              inq.id === inquiryId
+                ? {
+                    ...inq,
+                    status: "released" as InquiryStatus,
+                    commissionDeducted: breakdown.commissionAmount,
+                    releasedAmount: breakdown.ownerPayout,
+                    releasedAt: new Date().toISOString(),
+                    timeline: [
+                      ...inq.timeline,
+                      {
+                        step: 7,
+                        label: `Wallet released — ${formatINR(breakdown.ownerPayout)} (after ${formatINR(breakdown.commissionAmount)} commission)`,
+                        actor: "system" as const,
+                        at: new Date().toISOString(),
+                        note: "NEFT'd to owner's registered bank account",
+                      },
+                    ],
+                  }
+                : inq
+            ),
+          };
+        });
+        const updated = get().inquiries.find((i) => i.id === inquiryId);
+        if (updated) notifyOwner_walletReleased(updated);
+      },
     }),
     {
       name: "mandapam-store",
@@ -347,6 +696,7 @@ export const useAppStore = create<AppState>()(
         bookings: state.bookings,
         coupons: state.coupons,
         disputes: state.disputes,
+        inquiries: state.inquiries,
         compareIds: state.compareIds,
       }),
     }

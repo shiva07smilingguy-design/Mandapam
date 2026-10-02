@@ -50,6 +50,7 @@ import {
 import { amenityIcon } from "@/lib/amenity-icons";
 import { EVENT_TYPES } from "@/lib/seed-data";
 import { BookingFlowDialog } from "@/components/booking/booking-flow";
+import { InquiryFormDialog } from "@/components/inquiry/inquiry-form-dialog";
 
 function next30Days(): string[] {
   const out: string[] = [];
@@ -80,6 +81,7 @@ export function CustomerVenueDetail() {
   const [checkDate, setCheckDate] = useState<string>(filters.date || "");
   const [selectedPackageId, setSelectedPackageId] = useState<string>("");
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [inquiryOpen, setInquiryOpen] = useState(false);
 
   const dates = useMemo(() => next30Days(), []);
 
@@ -516,18 +518,17 @@ export function CustomerVenueDetail() {
                 disabled={!checkDate || !isVenueAvailable(venue, checkDate)}
                 onClick={() => {
                   if (!checkDate) return;
-                  startBooking(venue.id, pkg?.id);
-                  setBookingOpen(true);
+                  setInquiryOpen(true);
                 }}
               >
                 <CalendarHeart className="size-4 mr-1.5" />
                 {checkDate && isVenueAvailable(venue, checkDate)
-                  ? "Book now"
-                  : "Select a date to book"}
+                  ? "Check availability"
+                  : "Select a date to inquire"}
               </Button>
               <p className="text-[11px] text-muted-foreground text-center">
-                You won&apos;t be charged yet · 20% advance on confirmation · Free
-                cancellation up to 15 days before event
+                Submit a quick inquiry → owner responds with quote within 4
+                hours → you accept → owner locks date → pay 20% advance
               </p>
             </CardContent>
           </Card>
@@ -562,10 +563,9 @@ export function CustomerVenueDetail() {
         </aside>
       </div>
 
-      <BookingFlowDialog
-        open={bookingOpen}
-        onOpenChange={setBookingOpen}
-        preselectedPackageId={selectedPackageId || undefined}
+      <InquiryFormDialog
+        open={inquiryOpen}
+        onOpenChange={setInquiryOpen}
       />
     </div>
   );
