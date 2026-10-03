@@ -14,17 +14,16 @@ interface BackButtonProps {
 }
 
 /**
- * BackButton — small inline back navigation button.
+ * BackButton — prominent inline back navigation button.
  *
- * Renders as a subtle ghost-style link with a left chevron. Clicking it
- * switches the active view to the role's dashboard (or the explicitly
- * specified `to` target).
+ * Renders as a visible outlined button with left chevron icon, border,
+ * and background. Clicking it switches the active view to the role's
+ * dashboard (or the explicitly specified `to` target).
  *
  * Place at the top of any sub-page for predictable navigation.
  */
 export function BackButton({ to, label, className }: BackButtonProps) {
-  const { role, setRole, setCustomerView, setOwnerView, setAdminView } =
-    useAppStore();
+  const { role, setCustomerView, setOwnerView, setAdminView } = useAppStore();
 
   const handleClick = () => {
     const target = to ?? "dashboard";
@@ -50,7 +49,13 @@ export function BackButton({ to, label, className }: BackButtonProps) {
     <button
       onClick={handleClick}
       className={cn(
-        "inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition mb-3",
+        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg",
+        "text-sm font-medium",
+        "bg-background border border-border shadow-sm",
+        "text-foreground hover:bg-accent hover:border-primary/40",
+        "transition-all duration-150",
+        "active:scale-95",
+        "mb-4",
         className
       )}
       aria-label={label ?? defaultLabel}
