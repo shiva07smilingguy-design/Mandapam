@@ -36,6 +36,7 @@ import {
   formatDate,
 } from "@/lib/store";
 import { maskPhone } from "@/lib/notifications";
+import { BackButton } from "@/components/back-button";
 import { toast } from "sonner";
 import type { Inquiry, InquiryStatus } from "@/lib/types";
 
@@ -147,6 +148,7 @@ export function OwnerInquiries() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Inquiries</h1>
         <p className="text-sm text-muted-foreground mt-1">

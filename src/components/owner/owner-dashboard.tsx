@@ -13,6 +13,8 @@ import {
   Clock,
   CheckCircle2,
   ArrowUpRight,
+  Send,
+  Lock,
 } from "lucide-react";
 import {
   useAppStore,
@@ -20,6 +22,7 @@ import {
   formatDate,
   computeBookingAdvance,
 } from "@/lib/store";
+import { BackButton } from "@/components/back-button";
 import {
   BarChart,
   Bar,
@@ -35,7 +38,7 @@ import {
 } from "recharts";
 
 export function OwnerDashboard() {
-  const { venues, bookings, currentUser, setOwnerView, selectVenue } =
+  const { venues, bookings, inquiries, currentUser, setOwnerView, selectVenue } =
     useAppStore();
 
   const myVenues = venues.filter(
@@ -43,6 +46,7 @@ export function OwnerDashboard() {
   );
   const myVenueIds = new Set(myVenues.map((v) => v.id));
   const myBookings = bookings.filter((b) => myVenueIds.has(b.venueId));
+  const myInquiries = inquiries.filter((i) => myVenueIds.has(i.venueId));
 
   const today = new Date().toISOString().split("T")[0];
   const upcoming = myBookings
@@ -54,6 +58,20 @@ export function OwnerDashboard() {
   const pendingActions = myBookings.filter(
     (b) => b.status === "pending_payment"
   ).length;
+
+  // Inquiry stats
+  const pendingInquiries = myInquiries.filter((i) =>
+    ["pending_owner", "accepted_by_customer"].includes(i.status)
+  ).length;
+  const activeInquiries = myInquiries.filter((i) =>
+    ["quoted", "date_locked", "paid", "receipt_uploaded"].includes(i.status)
+  ).length;
+  const walletEscrow = myInquiries
+    .filter((i) => i.status === "paid" || i.status === "receipt_uploaded")
+    .reduce((s, i) => s + (i.advancePaid ?? 0), 0);
+  const recentInquiries = [...myInquiries]
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+    .slice(0, 5);
 
   // Charts data
   const monthlyData = [
@@ -90,28 +108,46 @@ export function OwnerDashboard() {
         </Button>
       </div>
 
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      {/* KPIs — inquiry-aware */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
         <KpiCard
-          icon={Wallet}
-          label="Total revenue"
-          value={formatINR(revenue)}
-          delta="+12.4%"
-          accent="text-primary"
+          icon={Send}
+          label="Pending inquiries"
+          value={`${pendingInquiries}`}
+          delta="Needs your response"
+          accent="text-amber-700"
+          onClick={() => setOwnerView("inquiries")}
         />
         <KpiCard
           icon={CalendarHeart}
-          label="Upcoming events"
-          value={`${upcoming.length}`}
-          delta={`${pendingActions} pending`}
-          accent="text-amber-700"
+          label="Active bookings"
+          value={`${activeInquiries}`}
+          delta="In progress"
+          accent="text-blue-700"
+          onClick={() => setOwnerView("inquiries")}
+        />
+        <KpiCard
+          icon={Wallet}
+          label="In wallet (escrow)"
+          value={formatINR(walletEscrow)}
+          delta="Advance held by Mandapam"
+          accent="text-emerald-700"
+          onClick={() => setOwnerView("earnings")}
         />
         <KpiCard
           icon={Building2}
           label="Active venues"
           value={`${myVenues.filter((v) => v.status === "approved").length}`}
-          delta={`${myVenues.filter((v) => v.status === "pending").length} pending`}
+          delta={`${myVenues.filter((v) => v.status === "pending").length} pending approval`}
           accent="text-emerald-700"
+          onClick={() => setOwnerView("venues")}
+        />
+        <KpiCard
+          icon={TrendingUp}
+          label="Total revenue (bookings)"
+          value={formatINR(revenue)}
+          delta="+12.4% MoM"
+          accent="text-primary"
         />
         <KpiCard
           icon={Star}
@@ -199,6 +235,95 @@ export function OwnerDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent inquiries */}
+      <Card>
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <h3 className="font-semibold">Recent inquiries</h3>
+              <p className="text-xs text-muted-foreground">
+                Latest leads from customers — respond within 4 hours
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setOwnerView("inquiries")}
+            >
+              View all <ArrowUpRight className="size-3.5" />
+            </Button>
+          </div>
+          {recentInquiries.length === 0 ? (
+            <p className="text-sm text-muted-foreground text-center py-6">
+              No inquiries yet. They&apos;ll appear here when customers submit
+              them.
+            </p>
+          ) : (
+            <div className="space-y-2 max-h-72 overflow-y-auto fancy-scroll">
+              {recentInquiries.map((inq) => {
+                const venue = myVenues.find((v) => v.id === inq.venueId);
+                const stepLabel =
+                  inq.status === "pending_owner"
+                    ? "Respond now"
+                    : inq.status === "quoted"
+                    ? "Quote sent"
+                    : inq.status === "accepted_by_customer"
+                    ? "Lock date"
+                    : inq.status === "date_locked"
+                    ? "Awaiting payment"
+                    : inq.status === "paid"
+                    ? "Advance received"
+                    : inq.status === "receipt_uploaded"
+                    ? "Receipt submitted"
+                    : inq.status === "released"
+                    ? "Completed"
+                    : inq.status;
+                const stepColor =
+                  inq.status === "pending_owner"
+                    ? "text-amber-700"
+                    : inq.status === "accepted_by_customer"
+                    ? "text-indigo-700"
+                    : inq.status === "paid" || inq.status === "released"
+                    ? "text-emerald-700"
+                    : "text-muted-foreground";
+                return (
+                  <div
+                    key={inq.id}
+                    className="flex items-center gap-3 p-2.5 rounded-lg hover:bg-secondary/50 cursor-pointer"
+                    onClick={() => setOwnerView("inquiries")}
+                  >
+                    {venue && (
+                      <img
+                        src={venue.coverImage}
+                        alt={inq.venueName}
+                        className="size-10 rounded-lg object-cover shrink-0"
+                      />
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <div className="text-sm font-medium truncate">
+                        {inq.customerName}
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">
+                        {inq.venueName} · {inq.eventType} ·{" "}
+                        {formatDate(inq.eventDate)}
+                      </div>
+                    </div>
+                    <div className={`text-xs font-medium ${stepColor} shrink-0`}>
+                      {stepLabel}
+                    </div>
+                    {inq.quote && (
+                      <div className="text-sm font-semibold text-primary shrink-0">
+                        {formatINR(inq.quote.amount)}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Upcoming + venues list */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -331,15 +456,20 @@ function KpiCard({
   value,
   delta,
   accent,
+  onClick,
 }: {
   icon: typeof Wallet;
   label: string;
   value: string;
   delta: string;
   accent: string;
+  onClick?: () => void;
 }) {
   return (
-    <Card className="p-4 gap-0">
+    <Card
+      className={`p-4 gap-0 ${onClick ? "cursor-pointer hover:shadow-md transition-shadow" : ""}`}
+      onClick={onClick}
+    >
       <div className="flex items-start justify-between">
         <div className="grid size-10 place-items-center rounded-full bg-accent text-accent-foreground shrink-0">
           <Icon className="size-5" />

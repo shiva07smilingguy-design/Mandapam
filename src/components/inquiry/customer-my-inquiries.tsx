@@ -35,6 +35,7 @@ import {
   formatDate,
   computeBookingAdvance,
 } from "@/lib/store";
+import { BackButton } from "@/components/back-button";
 import type { Inquiry, InquiryStatus } from "@/lib/types";
 
 const STATUS_META: Record<
@@ -116,6 +117,7 @@ export function CustomerMyInquiries() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-6">
         <h1 className="font-serif text-3xl font-bold">My Inquiries</h1>
         <p className="text-sm text-muted-foreground mt-1">

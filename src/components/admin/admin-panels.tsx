@@ -34,6 +34,7 @@ import {
   Mail,
   PartyPopper,
   Info,
+  ListFilter,
 } from "lucide-react";
 import {
   useAppStore,
@@ -47,6 +48,7 @@ import {
   COMMISSION_SLABS,
   COMMISSION_FLOOR_PERCENT,
 } from "@/lib/commission";
+import { BackButton } from "@/components/back-button";
 import {
   BarChart,
   Bar,
@@ -64,7 +66,7 @@ import { genCouponId } from "@/lib/store";
 // ----- Admin Dashboard -----
 
 export function AdminDashboard() {
-  const { venues, bookings, setAdminView } = useAppStore();
+  const { venues, bookings, inquiries, setAdminView } = useAppStore();
 
   const totalVenues = venues.length;
   const pendingApprovals = venues.filter((v) => v.status === "pending").length;
@@ -86,6 +88,18 @@ export function AdminDashboard() {
   const activeCustomers = new Set(
     bookings.map((b) => b.customerEmail)
   ).size;
+
+  // Inquiry stats
+  const totalInquiries = inquiries.length;
+  const pendingOwnerResponse = inquiries.filter(
+    (i) => i.status === "pending_owner"
+  ).length;
+  const inEscrow = inquiries
+    .filter((i) => i.status === "paid" || i.status === "receipt_uploaded")
+    .reduce((s, i) => s + (i.advancePaid ?? 0), 0);
+  const pendingWalletReleases = inquiries.filter(
+    (i) => i.status === "receipt_uploaded"
+  ).length;
 
   const gmvData = [
     { month: "Apr", gmv: 1250000, comm: 125000 },
@@ -115,19 +129,20 @@ export function AdminDashboard() {
           onClick={() => setAdminView("approvals")}
         />
         <Kpi
-          icon={CalendarHeart}
-          label="Total bookings"
-          value={`${totalBookings}`}
-          delta={`${bookings.filter((b) => b.status === "pending_payment").length} pending`}
+          icon={ListFilter}
+          label="Active inquiries"
+          value={`${totalInquiries}`}
+          delta={`${pendingOwnerResponse} awaiting owner`}
           accent="text-amber-700"
-          onClick={() => setAdminView("bookings")}
+          onClick={() => setAdminView("inquiries")}
         />
         <Kpi
           icon={Wallet}
-          label="Platform GMV"
-          value={formatINR(grossGMV)}
-          delta="+18.4% MoM"
-          accent="text-primary"
+          label="Escrow held"
+          value={formatINR(inEscrow)}
+          delta={`${pendingWalletReleases} pending release`}
+          accent="text-emerald-700"
+          onClick={() => setAdminView("inquiries")}
         />
         <Kpi
           icon={TrendingUp}
@@ -213,6 +228,28 @@ export function AdminDashboard() {
                 <Badge className="ml-auto bg-amber-500 text-white">{pendingApprovals}</Badge>
               )}
             </Button>
+            <Button
+              variant="outline"
+              className="w-full justify-start"
+              onClick={() => setAdminView("inquiries")}
+            >
+              <ListFilter className="size-4 mr-2 text-blue-700" />
+              Monitor inquiries
+              {pendingOwnerResponse > 0 && (
+                <Badge className="ml-auto bg-blue-500 text-white">{pendingOwnerResponse}</Badge>
+              )}
+            </Button>
+            {pendingWalletReleases > 0 && (
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                onClick={() => setAdminView("inquiries")}
+              >
+                <Wallet className="size-4 mr-2 text-emerald-700" />
+                Release pending wallets
+                <Badge className="ml-auto bg-emerald-500 text-white">{pendingWalletReleases}</Badge>
+              </Button>
+            )}
             <Button
               variant="outline"
               className="w-full justify-start"
@@ -317,6 +354,7 @@ export function AdminApprovals() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Venue Approvals</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -545,6 +583,7 @@ export function AdminBookings() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">All Bookings</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -756,6 +795,7 @@ export function AdminCommission() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <BackButton />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold">Commission & Payouts</h1>
@@ -1036,6 +1076,7 @@ export function AdminDisputes() {
   const { disputes, bookings, setDisputeStatus } = useAppStore();
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Disputes</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -1150,6 +1191,7 @@ export function AdminCoupons() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="font-serif text-3xl font-bold">Coupons & Offers</h1>
@@ -1353,6 +1395,7 @@ export function AdminReports() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <BackButton />
       <div>
         <h1 className="font-serif text-3xl font-bold">Reports & Analytics</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -1506,6 +1549,7 @@ export function AdminCustomers() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Customers</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -1565,6 +1609,7 @@ export function AdminReviews() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Reviews</h1>
         <p className="text-sm text-muted-foreground mt-1">

@@ -53,6 +53,7 @@ import {
   COMMISSION_FLOOR_PERCENT,
 } from "@/lib/commission";
 import { OwnerWalletCard } from "@/components/inquiry/owner-wallet-and-admin";
+import { BackButton } from "@/components/back-button";
 import type { BookingStatus, VenuePackage } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -115,6 +116,7 @@ export function OwnerCalendar() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
           <h1 className="font-serif text-3xl font-bold">Calendar</h1>
@@ -368,6 +370,7 @@ export function OwnerBookings() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-5">
         <h1 className="font-serif text-3xl font-bold">Bookings</h1>
         <p className="text-sm text-muted-foreground mt-1">
@@ -603,6 +606,7 @@ export function OwnerPackages() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="flex flex-wrap items-center justify-between gap-3 mb-5">
         <div>
           <h1 className="font-serif text-3xl font-bold">Packages</h1>
@@ -839,6 +843,7 @@ export function OwnerEarnings() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 space-y-5">
+      <BackButton />
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-serif text-3xl font-bold">Earnings & Settlements</h1>

@@ -13,6 +13,7 @@ import {
   Crown,
 } from "lucide-react";
 import { useAppStore, formatINR } from "@/lib/store";
+import { BackButton } from "@/components/back-button";
 import { amenityIcon } from "@/lib/amenity-icons";
 
 export function CustomerCompare() {
@@ -159,6 +160,7 @@ export function CustomerCompare() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton to="browse" label="Back to venues" />
       <div className="flex items-start justify-between mb-4">
         <div>
           <h1 className="font-serif text-3xl font-bold">Compare venues</h1>

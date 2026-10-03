@@ -19,6 +19,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { useAppStore, formatINR, formatDate } from "@/lib/store";
+import { BackButton } from "@/components/back-button";
 import type { BookingStatus } from "@/lib/types";
 import { toast } from "sonner";
 
@@ -88,6 +89,7 @@ export function CustomerMyBookings() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="mb-6">
         <h1 className="font-serif text-3xl font-bold">My Bookings</h1>
         <p className="text-sm text-muted-foreground mt-1">

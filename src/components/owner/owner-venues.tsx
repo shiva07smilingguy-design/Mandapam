@@ -36,6 +36,7 @@ import {
   Star,
 } from "lucide-react";
 import { useAppStore, formatINR, genVenueId } from "@/lib/store";
+import { BackButton } from "@/components/back-button";
 import { CITIES, COMING_SOON_CITIES, VENUE_TYPES, ALL_AMENITIES } from "@/lib/seed-data";
 import { amenityIcon } from "@/lib/amenity-icons";
 import type { Venue } from "@/lib/types";
@@ -236,6 +237,7 @@ export function OwnerVenues() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
+      <BackButton />
       <div className="flex items-center justify-between mb-5">
         <div>
           <h1 className="font-serif text-3xl font-bold">My Venues</h1>
